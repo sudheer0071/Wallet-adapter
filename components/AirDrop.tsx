@@ -21,6 +21,7 @@ export const AirDrop = ()=>{
             if (aridrop) {
       toast.dismiss(loadingToastId) 
                 toast.success(`${amount} tokens AirDropped to address: ${wallets.publicKey}`)
+                setAmount(null)
               } else{
                   toast.error(`something went wrong`)
                 }

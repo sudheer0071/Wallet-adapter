@@ -19,10 +19,15 @@ import '@solana/wallet-adapter-react-ui/styles.css'
 import { AirDrop } from "@/components/AirDrop";
 import { SolBalance } from "@/components/SolBalance";
 import { SendTokens } from "@/components/SendTokens";
+import { SignMessage } from "@/components/SignMessage";
+import { useRecoilState } from "recoil";
+import { sendState } from "./RecoilContextProvider";
+import { toast } from "sonner";
 
 export default function Home() {
   const network = WalletAdapterNetwork.Devnet
   const endpoint = useMemo(()=> clusterApiUrl(network),[network])
+  const [send, setSend] = useRecoilState(sendState)
 
   return (
          <ConnectionProvider endpoint={endpoint}>
@@ -54,6 +59,7 @@ export default function Home() {
     </TabsTrigger>
     <TabsTrigger value="sendSol">Send sol</TabsTrigger>
     <TabsTrigger value="checkSol">Check sol</TabsTrigger>
+    <TabsTrigger value="signature">Sign a Message</TabsTrigger>
   </TabsList>
   <TabsContent value="AirDrop"><div>
     <div className=" bg-custom-gradient  p-3 py-10 rounded-b-md">
@@ -86,7 +92,21 @@ export default function Home() {
     <div className=" mt-8 flex justify-center ">
       <SolBalance top={false} />
     </div>
-    <RefreshCcw className=" absolute left-3 top-2"/>
+    <RefreshCcw onClick={()=>{ 
+      setSend(true); 
+    }} className=" cursor-pointer hover:scale-110 transition-all duration-500 absolute left-3 top-2"/>
+    </div>
+    </div>
+  </TabsContent>
+  <TabsContent value="signature">
+  <div>
+  <div className=" bg-custom-gradient  p-3 py-10 rounded-b-md relative">
+      <div className=" text-3xl font-semibold text-center">
+      Type your message to be signed
+      </div>
+    <div className=" mt-8  ">
+      <SignMessage/>
+    </div> 
     </div>
     </div>
   </TabsContent>

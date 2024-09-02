@@ -1,7 +1,7 @@
 "use client"
 
 import { SpotlightPreview } from "@/components/SpotlightBackground";
-import {ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react'
+import {ConnectionProvider, useWallet, WalletProvider } from '@solana/wallet-adapter-react'
 import { Connection } from '@solana/web3.js'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
@@ -13,7 +13,7 @@ import {     WalletModalProvider,
 
 import { clusterApiUrl } from "@solana/web3.js";
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import '@solana/wallet-adapter-react-ui/styles.css'
 import { AirDrop } from "@/components/AirDrop";
@@ -21,14 +21,17 @@ import { SolBalance } from "@/components/SolBalance";
 import { SendTokens } from "@/components/SendTokens";
 import { SignMessage } from "@/components/SignMessage";
 import { useRecoilState } from "recoil";
-import { sendState } from "./RecoilContextProvider";
+import { sendState, walletConnectState } from "./RecoilContextProvider";
 import { toast } from "sonner";
 
 export default function Home() {
   const network = WalletAdapterNetwork.Devnet
   const endpoint = useMemo(()=> clusterApiUrl(network),[network])
   const [send, setSend] = useRecoilState(sendState)
-
+  const [walletConnect, SetWalletConnect]  = useRecoilState(walletConnectState)
+  const [warn, setWarn] = useState(false)
+ 
+ 
   return (
          <ConnectionProvider endpoint={endpoint}>
           <WalletProvider wallets={[]} autoConnect >
@@ -46,21 +49,33 @@ export default function Home() {
         </h1>
         <div className=" mt-10">
         <div className=" flex justify-center gap-16">
-            <WalletMultiButton/>
-            <WalletDisconnectButton/>
+          <div onClick={()=>{
+              console.log("connect clicked! "); 
+              SetWalletConnect(true)
+            }}> 
+            <WalletMultiButton />
+            </div>
+            <div onClick={()=>SetWalletConnect(false)} >
+            <WalletDisconnectButton />
+            </div>
         </div> 
 <div className=" flex justify-center mt-20 ">
         <Tabs defaultValue="account" className=" max-w-2xl w-full px-10 flex justify-center flex-col">
-  <TabsList className=" bg-black flex gap-10">
-    <TabsTrigger value="AirDrop">
+  <TabsList onClick={()=>setWarn(true)} className=" bg-black flex gap-10 p-7">
+    <TabsTrigger value="AirDrop" className=" text-lg">
       <div>
         AirDrop
       </div>
     </TabsTrigger>
-    <TabsTrigger value="sendSol">Send sol</TabsTrigger>
-    <TabsTrigger value="checkSol">Check sol</TabsTrigger>
-    <TabsTrigger value="signature">Sign a Message</TabsTrigger>
+    <TabsTrigger value="sendSol" className=" text-lg">Send sol</TabsTrigger>
+    <TabsTrigger value="checkSol" className=" text-lg">Check sol</TabsTrigger>
+    <TabsTrigger value="signature" className=" text-lg">Sign a Message</TabsTrigger>
   </TabsList>
+  {warn &&  <div className={`${walletConnect?' hidden':''} text-center absolute font-semibold text-white z-[10] left-[40%] text-3xl`}>
+      Please Connect your <br /> Wallet first
+    </div> }
+  
+  <div className={`${!walletConnect?'blur pointer-events-none opacity-60':''} transition-all duration-500 relative`}>
   <TabsContent value="AirDrop"><div>
     <div className=" bg-custom-gradient  p-3 py-10 rounded-b-md">
       <div className=" text-2xl font-semibold text-center">
@@ -110,6 +125,7 @@ export default function Home() {
     </div>
     </div>
   </TabsContent>
+  </div>
 </Tabs>
 </div>  
         </div>

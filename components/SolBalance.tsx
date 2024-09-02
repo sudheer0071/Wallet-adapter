@@ -1,4 +1,4 @@
-import { sendState } from "@/app/RecoilContextProvider"
+import { sendState, walletConnectState } from "@/app/RecoilContextProvider"
 import { useConnection, useWallet } from "@solana/wallet-adapter-react"
 import { Connection, LAMPORTS_PER_SOL } from "@solana/web3.js"
 import { useEffect, useState } from "react"
@@ -9,6 +9,7 @@ export const SolBalance = ({top}:{top:boolean})=>{
 
   const [balance, setBalnace] = useState<number|null>(0)
   const [send, setSend] = useRecoilState(sendState)
+  const [walletConnect, SetWalletConnect]  = useRecoilState(walletConnectState)
 
   const wallet = useWallet()
   const {connection} = useConnection()
@@ -18,14 +19,26 @@ export const SolBalance = ({top}:{top:boolean})=>{
     console.log("calling......."); 
     checkBalance()
   },[send])
+
+
+  if (wallet.publicKey!=null) {
+    SetWalletConnect(true)
+  }
+else{
+  SetWalletConnect(false)
+}
   
   const checkBalance = async()=>{
   //  const idd = toast.loading('fetching sol..')
+  if (wallet.publicKey!=null) {
+
     const bal = wallet.publicKey && await connection.getBalance(wallet.publicKey)
     setBalnace( bal&& bal / LAMPORTS_PER_SOL)
     // toast.dismiss(idd)
     toast.success('Sol Balance loaded!')
   }
+  }
+
   return <div className={` ${top?'':'bg-gradient-to-r rounded-md from-purple-200 to-teal-600 p-3'}  flex justify-center items-center`}>
     <Toaster richColors/>
      <div className="">

@@ -5,11 +5,22 @@ import { useState } from "react"
 import { toast, Toaster } from "sonner"
 import bs58 from 'bs58'
 import {ed25519} from '@noble/curves/ed25519'
+import { useRecoilState } from "recoil"
+import { walletConnectState } from "@/app/RecoilContextProvider"
 
 export const SignMessage = ()=>{
   const [message, setMessage] = useState('')
    const [signature, setSignature] = useState<string | any>('')
   const {publicKey, signMessage} = useWallet()
+
+  const [walletConnect, SetWalletConnect]  = useRecoilState(walletConnectState)
+
+  if (publicKey!=null) {
+    SetWalletConnect(true)
+  }
+else{
+  SetWalletConnect(false)
+}
 
   const copyclipboard = (text:string)=>{
     window.navigator.clipboard.writeText(text)

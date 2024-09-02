@@ -1,6 +1,8 @@
+import { walletConnectState } from "@/app/RecoilContextProvider";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { useState } from "react"
+import { useRecoilState } from "recoil";
 import { toast, Toaster } from "sonner";
 
 export const SendTokens = ()=>{
@@ -10,27 +12,43 @@ export const SendTokens = ()=>{
   const wallet = useWallet()
   const {connection} =  useConnection()
   
+  const [walletConnect, SetWalletConnect]  = useRecoilState(walletConnectState)
+
+  if (wallet.publicKey!=null) {
+    SetWalletConnect(true)
+  }
+else{
+  SetWalletConnect(false)
+}
 
   const sendTransaction = async ()=>{
-    const idd = toast.loading('Initiating transaction...')
-    try {
-      
-      const transaction = new Transaction();
-      wallet.publicKey &&  transaction.add(SystemProgram.transfer({
-      fromPubkey: wallet.publicKey,
-      toPubkey: new PublicKey(to),
-      lamports: amount && amount * LAMPORTS_PER_SOL
-    }))
-
-    await wallet.sendTransaction(transaction, connection)
-    toast.dismiss(idd)
-    toast.success('Transaction complete !')
-    setAmount('');
-    setTo('')
-  } catch (error) {
-    toast.dismiss(idd)
-    toast.error('Something went wrong :/')
-  }
+    if(wallet.publicKey!=null) {
+      if (amount==''||to=='') {
+        toast.warning("Please enter all Feilds first.")
+        return
+      }
+      const idd = toast.loading('Initiating transaction...')
+      try {
+        const transaction = new Transaction();
+        wallet.publicKey &&  transaction.add(SystemProgram.transfer({
+        fromPubkey: wallet.publicKey,
+        toPubkey: new PublicKey(to),
+        lamports: amount && amount * LAMPORTS_PER_SOL
+      }))
+  
+      await wallet.sendTransaction(transaction, connection)
+      toast.dismiss(idd)
+      toast.success('Transaction complete !')
+      setAmount('');
+      setTo('')
+    } catch (error) {
+      toast.dismiss(idd)
+      toast.error('Something went wrong :/')
+    }
+    }
+    else {
+      toast.warning("Please Connect your Wallet first. ")
+    }
   }
   
   return <div>

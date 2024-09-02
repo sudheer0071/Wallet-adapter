@@ -10,6 +10,11 @@ export const sendState = atom<boolean>({
   default:false, 
 })
 
+export const walletConnectState = atom<boolean>({
+  key:'walletConnet',
+  default:false, 
+})
+
 export default function RecoilContextProvider({ children }:{children:ReactNode}){
   return <RecoilRoot>{children}</RecoilRoot>
 }

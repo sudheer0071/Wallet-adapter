@@ -17,7 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${inter.className}  home h-screen bg-slate-900`}>
         <RecoilContextProvider>
         {children}
         </RecoilContextProvider>

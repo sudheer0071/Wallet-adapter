@@ -88,10 +88,12 @@
 }
 
 .home{
+   
   background-image: url(https://solana.com/_next/image?url=https%3A%2F%2Fcdn.builder.io%2Fapi%2Fv1%2Fimage%2Fassets%252Fce0c7323a97a4d91bd0baa7490ec9139%252F4e7450bbc1114943b89ef51ea59fb791&w=1200&q=75);
   background-size: cover; 
   background-position: 733px;
-  /* height: 140%; */
+  background-attachment: fixed;
+  /* height: 100vh; */
 }
 
 /* Hide spinners for number input */

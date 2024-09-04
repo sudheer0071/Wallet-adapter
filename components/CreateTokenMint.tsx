@@ -232,6 +232,13 @@ const sendTokens = async ()=>{
     console.log("Associated Token Address:", associatedTokenTo.toBase58());
      
  const transactionInstructions: TransactionInstruction[]=[];
+const checkTokenAccount =await connection.getAccountInfo(associatedTokenTo)
+console.log("checking token account...");
+console.log(checkTokenAccount);
+console.log("From account...");
+
+console.log(associatedTokenFrom);
+ 
 
  if (!(await connection.getAccountInfo(associatedTokenTo)))  {
       console.log("Token account doesn't exist. Creating now..."); 
@@ -248,7 +255,7 @@ const sendTokens = async ()=>{
 
     transactionInstructions.push(
       createTransferInstruction(
-        fromAccount.address,
+        mintAuthority,
          associatedTokenTo,
          mintToken,
          sendAmount * 1000000000
@@ -257,13 +264,14 @@ const sendTokens = async ()=>{
   
     const transaction = new Transaction().add(...transactionInstructions)
     console.log("Transaction created. Attempting to send...");
+    
 console.log(transaction);
 
 const blockHash = await connection.getLatestBlockhash();
 transaction.feePayer = mintToken;
 transaction.recentBlockhash = blockHash.blockhash;
-    const signature =  await wallet.signTransaction(transaction);
-     
+    const signed = wallet.signTransaction && await wallet.signTransaction(transaction); 
+     const signature = signed && await wallet.sendTransaction(signed,connection)
     // const signature = transaction && mintAuthority && await configureAndSendCurrentTransaction(
     //   transaction,
     //   connection,

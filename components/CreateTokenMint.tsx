@@ -163,7 +163,7 @@ signature &&  await connection.confirmTransaction(signature,'confirmed')
     
     console.log(mintTokenss);
     
-    setBal(amount)
+    setBal(amount+amount)
     toast.dismiss(id)
    toast.success(`${amount} Tokens Minted successfully`) 
    setAmount('')
@@ -181,6 +181,8 @@ const sendTokens = async ()=>{
     return ;
   } 
   
+  if(!wallet.publicKey) {return}
+
   const id = toast.loading(`Initiating Transaction...`)
   
   try {
@@ -223,7 +225,7 @@ const sendTokens = async ()=>{
       mintAuthority
     );
 
-    const fromAccount = await getAccount(connection, associatedTokenFrom);
+    const fromAccount = associatedTokenFrom && await getAccount(connection, associatedTokenFrom);
 
     const associatedTokenTo = await getAssociatedTokenAddress(
       mintToken, 
@@ -243,7 +245,7 @@ console.log(associatedTokenFrom);
  if (!(await connection.getAccountInfo(associatedTokenTo)))  {
       console.log("Token account doesn't exist. Creating now..."); 
       
-      transactionInstructions.push(
+    transactionInstructions.push(
         createAssociatedTokenAccountInstruction(
           wallet.publicKey, 
           associatedTokenTo,
@@ -253,9 +255,9 @@ console.log(associatedTokenFrom);
       );
     } 
 
-    transactionInstructions.push(
+  fromAccount &&  transactionInstructions.push(
       createTransferInstruction(
-        mintAuthority,
+        fromAccount.address,
          associatedTokenTo,
          mintToken,
          sendAmount * 1000000000
@@ -264,20 +266,14 @@ console.log(associatedTokenFrom);
   
     const transaction = new Transaction().add(...transactionInstructions)
     console.log("Transaction created. Attempting to send...");
-    
+
 console.log(transaction);
 
-const blockHash = await connection.getLatestBlockhash();
 transaction.feePayer = mintToken;
+const blockHash = await connection.getLatestBlockhash();
 transaction.recentBlockhash = blockHash.blockhash;
-    const signed = wallet.signTransaction && await wallet.signTransaction(transaction); 
-     const signature = signed && await wallet.sendTransaction(signed,connection)
-    // const signature = transaction && mintAuthority && await configureAndSendCurrentTransaction(
-    //   transaction,
-    //   connection,
-    //   mintAuthority,
-    // //  wallet.signTransaction
-    // );
+    // const signed = wallet.signTransaction && await wallet.signTransaction(transaction); 
+     const signature = transaction && await wallet.sendTransaction(transaction,connection) 
   signature && await connection.confirmTransaction(signature,'confirmed')
   
   

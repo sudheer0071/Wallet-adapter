@@ -253,8 +253,7 @@ const sendTokens = async () => {
     );
     console.log("Transaction created. Attempting to send...");
 
-    console.log(transaction);
-    transaction.feePayer = mintToken;
+    console.log(transaction); 
     const signature = await wallet.sendTransaction(transaction, connection);
 
     console.log("sending ....");

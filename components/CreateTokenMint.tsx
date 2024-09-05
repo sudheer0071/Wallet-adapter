@@ -1,219 +1,300 @@
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
-  createAssociatedTokenAccount,
   createAssociatedTokenAccountInstruction,
-  createInitializeAccountInstruction,
   createInitializeMint2Instruction,
-  createMint,
   createMintToInstruction,
   createTransferInstruction,
   getAccount,
-  getAccountLenForMint,
   getAssociatedTokenAddress,
   getMinimumBalanceForRentExemptMint,
   getMint,
-  getOrCreateAssociatedTokenAccount,
   MINT_SIZE,
   TOKEN_PROGRAM_ID,
-  transferInstructionData,
 } from "@solana/spl-token";
 import {
   Connection,
   Keypair,
-  LAMPORTS_PER_SOL,
   PublicKey,
-  SendTransactionError,
   SystemProgram,
   Transaction,
-  TransactionInstruction,
 } from "@solana/web3.js";
 import { useEffect, useState } from "react";
 import { toast, Toaster } from "sonner";
-import { SignerWalletAdapterProps } from "@solana/wallet-adapter-base";
 
 export const CreateTokenMint = () => {
-  const [mintAddress, setMintAddress] = useState<string | any>("");
-  const [mintBal, setMintBal] = useState<string | any>("");
-  const [showBal, setShowBal] = useState(false);
-  const [mintAdd, setMintAdd] = useState<string | any>("");
-  const [bal, setBal] = useState<any>("0");
-  const [tokenAccountAddress, setTokenAccountAddress] = useState<
-    string | any
-  >();
-  const [receiverAddress, setReceiverAddress] = useState<string | any>("");
-  const [sendAmount, setSendAmount] = useState<string | any>("");
+  const [mintAddress, setMintAddress] = useState<string>("");
+  const [mintAdd, setMintAdd] = useState<PublicKey | null>(null);
+  const [bal, setBal] = useState<string>("0");
+  const [tokenAccountAddress, setTokenAccountAddress] = useState<string>("");
+  const [receiverAddress, setReceiverAddress] = useState<string>("");
+  const [sendAmount, setSendAmount] = useState<string>("");
+  const [amount, setAmount] = useState<string>("");
+  const [tokenStates, setTokenStates] = useState<{ [key: number]: { amount: string, receiverAddress: string, sendAmount: string } }>({});
+  const [tokens, setTokens] = useState([]);
 
-  const [amount, setAmount] = useState<number | any>("");
+  const [inputIdx, setInputIdx] = useState(0)
+  const [btnIdx, setBtnIdx] = useState(0)
 
   const wallet = useWallet();
-  const { connection } = useConnection();
   const mintAuthority = wallet.publicKey;
-  const freezeAuthority = wallet.publicKey;
+  const { connection } = useConnection();
+
+  const handleInputChange = (idx: number, field: string, value: string) => {
+    setTokenStates((prevState) => ({
+      ...prevState,
+      [idx]: {
+        ...prevState[idx],
+        [field]: value,
+      },
+    }));
+  };
 
   if (!wallet.publicKey) {
     console.log("Wallet not connected!");
-    return;
+    return null;
   }
+ 
+  // Helper function to safely parse JSON
+const safeJSONParse = (str:any) => {
+  try {
+    return JSON.parse(str);
+  } catch (e) {
+    console.error('Error parsing JSON:', e);
+    return null;
+  }
+};
+
+// Helper function to safely stringify JSON
+const safeJSONStringify = (obj:any) => {
+  try {
+    return JSON.stringify(obj);
+  } catch (e) {
+    console.error('Error stringifying JSON:', e);
+    return '';
+  }
+};
+
+// Helper function to safely get tokens from localStorage
+const getTokensFromStorage = () => {
+  const storedTokens = localStorage.getItem('tokens');
+  // console.log('Tokens from localStorage:', storedTokens);
+  return safeJSONParse(storedTokens) || [];
+};
+
+
+
+// Helper function to safely set tokens in localStorage
+const setTokensInStorage = (tokens:any) => {
+  const tokenString = safeJSONStringify(tokens);
+  localStorage.setItem('tokens', tokenString);
+  console.log('Tokens set in localStorage:', tokenString);
+};
+
+  // localStorage.setItem('tokens',JSON.stringify(tokens))
+
+  let allTokens:any = []
+
+  allTokens =  getTokensFromStorage()
+   console.log(allTokens); 
+ 
 
   const createToken = async () => {
+    if (!wallet.publicKey) {
+      console.log("Wallet not connected!");
+      return null;
+    }
+  
     const id = toast.loading("Creating Token ..");
     try {
-      console.log(connection, wallet, mintAuthority);
       const keypair = Keypair.generate();
       const lamports = await getMinimumBalanceForRentExemptMint(connection);
 
-      const transaction =
-        wallet.publicKey &&
-        mintAuthority &&
-        new Transaction().add(
-          SystemProgram.createAccount({
-            fromPubkey: wallet.publicKey,
-            newAccountPubkey: keypair.publicKey,
-            space: MINT_SIZE,
-            lamports,
-            programId: TOKEN_PROGRAM_ID,
-          }),
-          createInitializeMint2Instruction(
-            keypair.publicKey,
-            9,
-            mintAuthority,
-            freezeAuthority,
-            TOKEN_PROGRAM_ID,
-          ),
-        );
+      const transaction = new Transaction().add(
+        SystemProgram.createAccount({
+          fromPubkey: wallet.publicKey,
+          newAccountPubkey: keypair.publicKey,
+          space: MINT_SIZE,
+          lamports,
+          programId: TOKEN_PROGRAM_ID,
+        }),
+        createInitializeMint2Instruction(
+          keypair.publicKey,
+          9,
+          wallet.publicKey,
+          wallet.publicKey,
+          TOKEN_PROGRAM_ID
+        )
+      );
 
-      const signature =
-        transaction &&
-        (await wallet.sendTransaction(transaction, connection, {
-          signers: [keypair],
-        }));
-      signature &&
-        (await connection.confirmTransaction(signature, "confirmed"));
-      console.log("Mint Created:", keypair.publicKey.toBase58());
+      const signature = await wallet.sendTransaction(transaction, connection, {
+        signers: [keypair],
+      });
+      await connection.confirmTransaction(signature, "confirmed");
+
       setMintAdd(keypair.publicKey);
-      console.log("keypair.pulicKey: ");
-      console.log(keypair.publicKey);
-
-      setMintAddress(keypair.publicKey.toBase58());
-
-      setShowBal(true);
-
+      setTokens((prevTokens) => {
+        console.log('Previous tokens:', prevTokens);
+        const updatedTokens = [
+          ...prevTokens,
+          { mintAddress: keypair.publicKey.toBase58(), tokenAccountAddress: '' }
+        ];
+        console.log('Updated tokens:', updatedTokens);
+        setTokensInStorage(updatedTokens);
+        return updatedTokens;
+      });
+      console.log("tokenssssssssssssssss");
+      console.log(tokens);
+      
+      
+      setMintAddress(keypair.publicKey.toBase58())
       toast.dismiss(id);
       toast.success("Token Minted Successfully!");
     } catch (error) {
-      console.log(error);
-
+      console.error("Error creating token:", error);
       toast.dismiss(id);
-      toast.error("Error in Minting Tokens ");
+      toast.error("Error in Minting Tokens");
     }
   };
 
-  const mintBalance = async () => {
-    console.log("inside mintd ");
-    console.log(mintAdd);
-
-    const mintInfo = wallet.publicKey && (await getMint(connection, mintAdd));
-    console.log("mint supply: ");
-
-    console.log(mintInfo?.supply);
-
-    setMintBal(mintInfo?.supply);
-  };
-
-  // if(showBal) mintBalance()
-
   const tokenAccount = async () => {
     const id = toast.loading("Creating Token Account..");
+    if (!wallet.publicKey) {
+      console.log("Wallet not connected!");
+      return null;
+    }
+  
     try {
-      const keypair = Keypair.generate();
-      const mintState = await getMint(connection, mintAdd);
-      const space = getAccountLenForMint(mintState);
+      if (!mintAdd) throw new Error("Mint address not set");
 
-      const lamports = await getMinimumBalanceForRentExemptMint(connection);
+      const associatedTokenAddress = await getAssociatedTokenAddress(
+        mintAdd,
+        wallet.publicKey
+      );
 
-      const payer = new PublicKey(mintAddress);
-
-      const associatedTokenAddress =
-        mintAuthority &&
-        (await getAssociatedTokenAddress(payer, mintAuthority, false));
-      const ataInfo =
-        associatedTokenAddress &&
-        (await connection.getAccountInfo(associatedTokenAddress));
+      const ataInfo = await connection.getAccountInfo(associatedTokenAddress);
       if (ataInfo !== null) {
-        console.log("ATA already exists");
         toast.dismiss(id);
         toast.error("Token account already associated with this wallet");
         return;
       }
-      const tokenAccount = new Transaction().add(
+
+      const transaction = new Transaction().add(
         createAssociatedTokenAccountInstruction(
-          //@ts-ignore
-          mintAuthority,
+          wallet.publicKey,
           associatedTokenAddress,
-          mintAuthority,
-          payer,
-          TOKEN_PROGRAM_ID,
-          // lamports,
-        ),
+          wallet.publicKey,
+          mintAdd
+        )
       );
 
-      const signature =
-        tokenAccount &&
-        (await wallet.sendTransaction(tokenAccount, connection));
-      signature &&
-        (await connection.confirmTransaction(signature, "confirmed"));
-      setTokenAccountAddress(associatedTokenAddress?.toBase58());
+      const signature = await wallet.sendTransaction(transaction, connection);
+      await connection.confirmTransaction(signature, "confirmed");
+ 
+      setTokens(prevTokens => {
+        console.log('Previous tokens:', prevTokens);
+        const updatedTokens = prevTokens.map(token => 
+          token.mintAddress === mintAdd.toBase58() 
+            ? { ...token, tokenAccountAddress: associatedTokenAddress.toBase58() }
+            : token
+        );
+        console.log('Updated tokens:', updatedTokens);
+        setTokensInStorage(updatedTokens);
+        return updatedTokens;
+      });
+
+      setTokenAccountAddress(associatedTokenAddress.toBase58());  
       toast.dismiss(id);
-      toast.success("Token Account Created successffully!");
+      toast.success("Token Account Created successfully!");
     } catch (error) {
-      console.log(error);
+      console.error("Error creating token account:", error);
       toast.dismiss(id);
       toast.error("Something went wrong :/");
     }
   };
+ 
 
   const mintTokens = async () => {
-    if (amount == "") {
+    if (amount === "") {
       toast.warning("Please enter the amount first");
       return;
     }
+
+    if (!wallet.publicKey) {
+      console.log("Wallet not connected!");
+      return null;
+    }
+  
+
     const id = toast.loading(`Minting ${amount} tokens....`);
     try {
-      const authority = new PublicKey(mintAddress);
-      const associatedTokenAddress =
-        mintAuthority &&
-        (await getAssociatedTokenAddress(authority, mintAuthority, false));
+      if (!mintAdd) throw new Error("Mint address not set");
 
-      const mintTokenss =
-        associatedTokenAddress &&
-        mintAuthority &&
-        new Transaction().add(
-          createMintToInstruction(
-            authority,
-            associatedTokenAddress,
-            mintAuthority,
-            amount * 1000000000,
-          ),
-        );
+      const associatedTokenAddress = await getAssociatedTokenAddress(
+        mintAdd,
+        wallet.publicKey
+      );
 
-      const signature =
-        mintTokenss && (await wallet.sendTransaction(mintTokenss, connection));
-      signature &&
-        (await connection.confirmTransaction(signature, "confirmed"));
+      const mintTokens = new Transaction().add(
+        createMintToInstruction(
+          mintAdd,
+          associatedTokenAddress,
+          wallet.publicKey,
+          BigInt(parseFloat(amount) * 1e9)
+        )
+      );
 
-      console.log("minting tokens .......... ");
+      const signature = await wallet.sendTransaction(mintTokens, connection);
+      await connection.confirmTransaction(signature, "confirmed");
 
-      console.log(mintTokenss);
-
-      setBal(amount + amount);
+      setBal((prevBal) => (parseFloat(prevBal) + parseFloat(amount)).toString());
       toast.dismiss(id);
       toast.success(`${amount} Tokens Minted successfully`);
       setAmount("");
     } catch (error) {
-      console.log(error);
+      console.error("Error minting tokens:", error);
       toast.dismiss(id);
-      toast.error("Error in Minting Tokens ");
+      toast.error("Error in Minting Tokens");
+    }
+  };
+
+  const createReceiverAccount = async () => {
+    if (!receiverAddress) {
+      toast.warning("Please enter the receiver's address first");
+      return;
+    }
+
+    if (!wallet.publicKey) {
+      console.log("Wallet not connected!");
+      return null;
+    }
+  
+
+    const id = toast.loading("Creating receiver's token account...");
+    try {
+      if (!mintAdd) throw new Error("Mint address not set");
+
+      const owner = new PublicKey(receiverAddress);
+      const associatedTokenTo = await getAssociatedTokenAddress(mintAdd, owner);
+
+      const transaction = new Transaction().add(
+        createAssociatedTokenAccountInstruction(
+          wallet.publicKey,
+          associatedTokenTo,
+          owner,
+          mintAdd
+        )
+      );
+
+      const signature = await wallet.sendTransaction(transaction, connection);
+      await connection.confirmTransaction(signature, "confirmed");
+
+      toast.dismiss(id);
+      toast.success("Receiver's token account created successfully!");
+    } catch (error) {
+      console.error("Error creating receiver's token account:", error);
+      toast.dismiss(id);
+      toast.error("Failed to create receiver's token account");
     }
   };
 
@@ -222,27 +303,27 @@ export const CreateTokenMint = () => {
       toast.warning("Please enter the both feilds ");
       return;
     }
-
+  
     if (!wallet.publicKey) {
       return;
     }
-
+  
     const id = toast.loading(`Initiating Transaction...`);
-
+  
     try {
       console.log("Token account..");
-
+  
       const mintToken = new PublicKey(mintAddress);
       const owner = new PublicKey(receiverAddress);
       console.log("Wallet Public Key:", wallet.publicKey.toBase58());
       console.log("Connection RPC URL:", connection.rpcEndpoint);
-
+  
       console.log("mint address: ");
-
+  
       console.log(mintAddress);
-
+  
       console.log("receiver address: ");
-
+  
       console.log(receiverAddress);
       if (!mintAuthority) {
         return;
@@ -251,9 +332,9 @@ export const CreateTokenMint = () => {
         mintToken,
         mintAuthority,
       );
-
+  
       const fromAccount = await getAccount(connection, associatedTokenFrom);
-
+  
       const associatedTokenTo = await getAssociatedTokenAddress(
         mintToken,
         owner,
@@ -264,7 +345,7 @@ export const CreateTokenMint = () => {
       console.log("checking token account...");
       console.log(checkTokenAccount);
       console.log("From account...");
-
+  
       console.log(associatedTokenFrom);
       const transaction = new Transaction();
       if (!(await connection.getAccountInfo(associatedTokenTo))) {
@@ -285,134 +366,148 @@ export const CreateTokenMint = () => {
           fromAccount.address,
           associatedTokenTo,
           wallet.publicKey,
-          sendAmount * 1000000000,
+          BigInt(parseFloat(sendAmount) * 1e9)
         ),
       );
       console.log("Transaction created. Attempting to send...");
-
-      console.log(transaction);
-
+  
+      console.log(transaction); 
       const signature = await wallet.sendTransaction(transaction, connection);
-
+        await connection.confirmTransaction(signature,'confirmed')
       console.log("sending ....");
       toast.dismiss(id);
       toast.success(
         `Sucessfully Sent ${sendAmount} tokens to ${receiverAddress}`,
       );
+      toast.dismiss(id);
       setReceiverAddress("");
       setSendAmount("");
-    } catch (error) {
+    } catch (error:any) {
       console.log(error);
-
       toast.dismiss(id);
-      toast.error(`Something went wrong`);
+      toast.error(`${error.message}`);
     }
   };
-
-  // useEffect(()=>{
-  //   mintBalance();
-  // },[mintBal])
-
+  
   return (
     <div>
       <Toaster richColors />
-      <div className=" justify-center flex">
+      <div className="justify-center flex">
         <button
           onClick={createToken}
-          className=" p-3 ml-3 bg-teal-500 rounded-md hover:bg-teal-800 hover:text-white transition-all duration-500"
+          className="p-3 ml-3 bg-teal-500 rounded-md hover:bg-teal-800 hover:text-white transition-all duration-500"
         >
           Mint Tokens
         </button>
       </div>
-      {mintAddress && (
-        <div className=" mt-7">
-          <div className=" text-xl font-medium">
-            Mint Supply: {bal == "0" ? 0 : bal}
+      {/* {allTokens.map((token)=><div>{token.mintAddress} <br /> {token.tokenAccountAddress}</div>)} */}
+     
+      {allTokens.length !== 0 && (
+    allTokens.map((token: any, idx: number) => (
+      <div key={idx} className="mt-7 rounded-xl py-5 shadow-xl p-2 border-1 shadow-gray-700 ">
+        <div className="flex flex-col">
+          <div> 
+        <div className="text-xl font-medium">
+          Mint Supply: {bal === "0" ? 0 : bal}
+        </div>
+            Your token Mint address:
+            <AddressCard value={token.mintAddress} />
           </div>
-          <div className=" flex">
-            <div>
-              Your token Mint address:
-              <AddressCard value={mintAddress} />
+          <div className="mt-5">
+            <button
+              onClick={tokenAccount}
+              className="p-3 bg-teal-500 rounded-md hover:bg-teal-800 hover:text-white transition-all duration-500"
+            >
+              Create Token Account
+            </button>
+            <div className="mt-2">
+              {token.tokenAccountAddress && (
+                <AddressCard value={token.tokenAccountAddress} />
+              )}
             </div>
-            <div className=" mt-5">
-              <button
-                onClick={tokenAccount}
-                className=" p-3 ml-3 bg-teal-500 rounded-md hover:bg-teal-800 hover:text-white transition-all duration-500"
-              >
-                Create Token Account
-              </button>
-              <div className=" mt-2">
-                {tokenAccountAddress && (
-                  <AddressCard value={tokenAccountAddress} />
-                )}
+          </div>
+        </div>
+
+        {token.tokenAccountAddress && (
+          <div>
+            <div className="flex justify-center mt-5">
+              <input
+                type="number"
+                value={inputIdx==idx?amount:''}
+                onChange={(e) => { 
+                  console.log("inside amount input idx");
+                  
+                  console.log(idx);
+                  
+                  console.log("inside amount input Inputidx");
+                  
+                  console.log(inputIdx);
+
+                  setInputIdx(idx);setBtnIdx(idx);
+                   setAmount(e.target.value)}}
+                placeholder="Amount"
+                className="truncate p-3 bg-slate-800 text-white font-medium text-lg rounded-md"
+              />
+              <div>
+                <button
+                  onClick={()=> {
+                    console.log("btnIdx = ",btnIdx);
+                    console.log("idx = ",idx);
+                    
+                    btnIdx == idx ? mintTokens():null}}
+                  className="p-3 ml-3 bg-teal-500 rounded-md hover:bg-teal-800 hover:text-white transition-all duration-500"
+                >
+                  Add tokens
+                </button>
               </div>
             </div>
-          </div>
 
-          {tokenAccountAddress && (
-            <div>
-              <div className=" flex justify-center mt-5">
-                <input
-                  type="number"
-                  value={amount}
-                  onChange={(e: any) => setAmount(e.target.value)}
-                  placeholder="Amount"
-                  className=" truncate p-3 bg-slate-800 text-white font-medium text-lg rounded-md"
-                />
-                <div className="  ">
-                  <button
-                    onClick={mintTokens}
-                    className=" p-3 ml-3 bg-teal-500 rounded-md hover:bg-teal-800 hover:text-white transition-all duration-500"
-                  >
-                    Add tokens
-                  </button>
-                </div>
-              </div>
-
-              <div className=" flex justify-center flex-col items-center mt-10">
-                <div className=" text-2xl font-medium ">Send Tokens</div>
-
-                <div className=" flex justify-center gap-4 mt-4">
-                  <div className=" ">
+            {bal !== '0' && (
+              <div className="flex justify-center flex-col items-center mt-10">
+                <div className="text-2xl font-medium">Send Tokens</div>
+                <div className="flex justify-center gap-4 mt-4">
+                  <div>
                     <input
                       type="text"
-                      value={receiverAddress}
-                      onChange={(e: any) => setReceiverAddress(e.target.value)}
-                      placeholder="Enter Reciever's Address"
-                      className=" w-96 truncate p-3 bg-slate-800 text-white font-medium text-lg rounded-md"
+                      value={tokenStates[idx]?.receiverAddress || ''}
+                      onChange={(e) => handleInputChange(idx, 'receiverAddress', e.target.value)}
+                      placeholder="Enter Receiver's Address"
+                      className="w-96 truncate p-3 bg-slate-800 text-white font-medium text-lg rounded-md"
                     />
                   </div>
-                  <div className="">
+                  <div>
                     <input
                       type="number"
-                      value={sendAmount}
-                      onChange={(e: any) => setSendAmount(e.target.value)}
-                      placeholder="Amount "
-                      className=" p-3 w-40 bg-slate-800 text-white font-medium text-lg rounded-md"
+                      value={tokenStates[idx]?.sendAmount || ''}
+                      onChange={(e) => handleInputChange(idx, 'sendAmount', e.target.value)}
+                      placeholder="Amount"
+                      className="p-3 w-40 bg-slate-800 text-white font-medium text-lg rounded-md"
                     />
                   </div>
-                  <div className=" flex justify-center">
+                  <div className="flex justify-center">
                     <button
                       onClick={sendTokens}
-                      className=" p-3  px-4 bg-teal-500 rounded-md hover:bg-teal-800 hover:text-white transition-all duration-500"
+                      className="p-3 px-4 bg-teal-500 rounded-md hover:bg-teal-800 hover:text-white transition-all duration-500"
                     >
-                      send
+                      Send
                     </button>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
-      )}
+            )}
+          </div>
+        )}
+      </div>
+    ))
+  )}
     </div>
   );
 };
 
-const AddressCard = ({ value }: any) => {
+const AddressCard = ({ value }: { value: string }) => {
   return (
     <div>
-      <div className=" truncate rounded-md text-sm font-medium text-black bg-purple-200 p-2">
+      <div className="truncate rounded-md text-sm font-medium text-black bg-purple-300 p-2">
         {value}
       </div>
     </div>

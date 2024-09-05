@@ -23,6 +23,17 @@ import { useEffect, useState } from "react";
 import { toast, Toaster } from "sonner";
 
 export const CreateTokenMint = () => {
+  
+  let allTokens:any = []
+  const getTokensFromStorage = () => {
+    const storedTokens = localStorage.getItem('tokens');
+    console.log('Tokens from localStorage:', storedTokens);
+    if(!storedTokens) return null;
+    return JSON.parse(storedTokens) || [];
+  };
+  
+  allTokens =  getTokensFromStorage()
+  //  console.log(allTokens); 
   const [mintAddress, setMintAddress] = useState<string>("");
   const [mintAdd, setMintAdd] = useState<PublicKey | null>(null);
   const [bal, setBal] = useState<string>("0");
@@ -32,7 +43,7 @@ export const CreateTokenMint = () => {
   const [amount, setAmount] = useState<string>("");
   // const [sendAmount, setSendAmount] = useState<string>("");
   const [tokenStates, setTokenStates] = useState<{ [key: number]: { amount: string, receiverAddress: string, sendAmount: string } }>({});
-  const [tokens, setTokens] = useState([]);
+  const [tokens, setTokens] = useState(allTokens);
 
   const [inputIdx, setInputIdx] = useState(0)
   const [btnIdx, setBtnIdx] = useState(0)
@@ -65,15 +76,7 @@ const safeJSONStringify = (obj:any) => {
     return '';
   }
 };
- 
-const getTokensFromStorage = () => {
-  const storedTokens = localStorage.getItem('tokens');
-  // console.log('Tokens from localStorage:', storedTokens);
-  return safeJSONParse(storedTokens) || [];
-};
-
-
- 
+  
 const setTokensInStorage = (tokens:any) => {
   const tokenString = safeJSONStringify(tokens);
   localStorage.setItem('tokens', tokenString);
@@ -81,11 +84,7 @@ const setTokensInStorage = (tokens:any) => {
 };
 
   // localStorage.setItem('tokens',JSON.stringify(tokens))
-
-  let allTokens:any = []
-
-  allTokens =  getTokensFromStorage()
-  //  console.log(allTokens); 
+ 
  
 
   const createToken = async () => {
@@ -124,12 +123,12 @@ const setTokensInStorage = (tokens:any) => {
       setMintAdd(keypair.publicKey);
       //@ts-ignore
       setTokens((prevTokens:any) => {
-        // console.log('Previous tokens:', prevTokens);
+        console.log('Previous tokens:', prevTokens);
         const updatedTokens = [
           ...prevTokens,
           { mintAddress: keypair.publicKey.toBase58(), tokenAccountAddress: '' }
         ];
-        // console.log('Updated tokens:', updatedTokens);
+        console.log('Updated tokens:', updatedTokens);
         setTokensInStorage(updatedTokens);
         return updatedTokens;
       });
@@ -147,18 +146,21 @@ const setTokensInStorage = (tokens:any) => {
     }
   };
 
-  const tokenAccount = async () => {
+  const tokenAccount = async (minttt:string) => {
     const id = toast.loading("Creating Token Account..");
     if (!wallet.publicKey) {
       console.log("Wallet not connected!");
       return null;
     }
   
+    console.log("mintAdd...");
+    
+    console.log(mintAdd);
     try {
-      if (!mintAdd) throw new Error("Mint address not set");
-
+      if (!minttt) throw new Error("Mint address not set");
+      const mintt = new PublicKey(minttt)
       const associatedTokenAddress = await getAssociatedTokenAddress(
-        mintAdd,
+        mintt,
         wallet.publicKey
       );
 
@@ -174,7 +176,7 @@ const setTokensInStorage = (tokens:any) => {
           wallet.publicKey,
           associatedTokenAddress,
           wallet.publicKey,
-          mintAdd
+          mintt
         )
       );
 
@@ -182,13 +184,13 @@ const setTokensInStorage = (tokens:any) => {
       await connection.confirmTransaction(signature, "confirmed");
  
       setTokens((prevTokens:any) => {
-        // console.log('Previous tokens:', prevTokens);
+        console.log('Previous tokens:', prevTokens);
         const updatedTokens = prevTokens.map((token:any) => 
-          token.mintAddress === mintAdd.toBase58() 
+          token.mintAddress === mintt.toBase58() 
             ? { ...token, tokenAccountAddress: associatedTokenAddress.toBase58() }
             : token
         );
-        // console.log('Updated tokens:', updatedTokens);
+        console.log('Updated tokens:', updatedTokens);
         setTokensInStorage(updatedTokens);
         return updatedTokens;
       });
@@ -303,7 +305,7 @@ const setTokensInStorage = (tokens:any) => {
     }
   };
 
-  const sendTokens = async () => {
+  const sendTokens = async (mintt:string) => {
     if (sendAmount == "" || receiverAddress == "") {
       toast.warning("Please enter the both feilds ");
       return;
@@ -318,7 +320,7 @@ const setTokensInStorage = (tokens:any) => {
     try {
       console.log("Token account..");
   
-      const mintToken = new PublicKey(mintAddress);
+      const mintToken = new PublicKey(mintt);
       const owner = new PublicKey(receiverAddress); 
       if (!mintAuthority) {
         return;
@@ -417,7 +419,7 @@ allTokens.map((token: any, idx: number) => (
       <div className="mt-5 ">
         <div className=" flex justify-center">
         <button
-          onClick={tokenAccount}
+          onClick={()=>tokenAccount(token.mintAddress)}
           className="p-3 bg-teal-500 rounded-md hover:bg-teal-800 hover:text-white transition-all duration-500 "
         >
           Create Token Account
@@ -485,7 +487,7 @@ allTokens.map((token: any, idx: number) => (
               </div>
               <div className="flex justify-center">
                 <button
-                  onClick={sendTokens}
+                  onClick={()=>sendTokens(token.mintAddress)}
                   className="p-3 px-4 bg-teal-500 rounded-md hover:bg-teal-800 hover:text-white transition-all duration-500"
                 >
                   Send

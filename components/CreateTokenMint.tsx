@@ -77,7 +77,7 @@ const getTokensFromStorage = () => {
 const setTokensInStorage = (tokens:any) => {
   const tokenString = safeJSONStringify(tokens);
   localStorage.setItem('tokens', tokenString);
-  console.log('Tokens set in localStorage:', tokenString);
+  // console.log('Tokens set in localStorage:', tokenString);
 };
 
   // localStorage.setItem('tokens',JSON.stringify(tokens))
@@ -85,7 +85,7 @@ const setTokensInStorage = (tokens:any) => {
   let allTokens:any = []
 
   allTokens =  getTokensFromStorage()
-   console.log(allTokens); 
+  //  console.log(allTokens); 
  
 
   const createToken = async () => {
@@ -124,17 +124,17 @@ const setTokensInStorage = (tokens:any) => {
       setMintAdd(keypair.publicKey);
       //@ts-ignore
       setTokens((prevTokens:any) => {
-        console.log('Previous tokens:', prevTokens);
+        // console.log('Previous tokens:', prevTokens);
         const updatedTokens = [
           ...prevTokens,
           { mintAddress: keypair.publicKey.toBase58(), tokenAccountAddress: '' }
         ];
-        console.log('Updated tokens:', updatedTokens);
+        // console.log('Updated tokens:', updatedTokens);
         setTokensInStorage(updatedTokens);
         return updatedTokens;
       });
-      console.log("tokenssssssssssssssss");
-      console.log(tokens);
+      // console.log("tokenssssssssssssssss");
+      // console.log(tokens);
       
       
       setMintAddress(keypair.publicKey.toBase58())
@@ -182,13 +182,13 @@ const setTokensInStorage = (tokens:any) => {
       await connection.confirmTransaction(signature, "confirmed");
  
       setTokens((prevTokens:any) => {
-        console.log('Previous tokens:', prevTokens);
+        // console.log('Previous tokens:', prevTokens);
         const updatedTokens = prevTokens.map((token:any) => 
           token.mintAddress === mintAdd.toBase58() 
             ? { ...token, tokenAccountAddress: associatedTokenAddress.toBase58() }
             : token
         );
-        console.log('Updated tokens:', updatedTokens);
+        // console.log('Updated tokens:', updatedTokens);
         setTokensInStorage(updatedTokens);
         return updatedTokens;
       });
@@ -223,7 +223,7 @@ const setTokensInStorage = (tokens:any) => {
     
       const mintt = new PublicKey(minttt)
       if (!mintt) throw new Error("Mint address not set");
-      console.log(mintt);
+      // console.log(mintt);
       const associatedTokenAddress = await getAssociatedTokenAddress(
         mintt,
         wallet.publicKey
@@ -243,13 +243,13 @@ const setTokensInStorage = (tokens:any) => {
  
 
       setTokens((prevTokens:any) => {
-        console.log('Previous tokens:', prevTokens);
+        // console.log('Previous tokens:', prevTokens);
         const updatedTokens = prevTokens.map((token:any) => 
           token.mintAddress === mintt.toBase58() 
             ? { ...token, bal: (token.bal || 0) + parseFloat(amount)}
             : token
         );
-        console.log('Updated tokens:', updatedTokens);
+        // console.log('Updated tokens:', updatedTokens);
         setTokensInStorage(updatedTokens);
         return updatedTokens;
       });
@@ -319,17 +319,7 @@ const setTokensInStorage = (tokens:any) => {
       console.log("Token account..");
   
       const mintToken = new PublicKey(mintAddress);
-      const owner = new PublicKey(receiverAddress);
-      console.log("Wallet Public Key:", wallet.publicKey.toBase58());
-      console.log("Connection RPC URL:", connection.rpcEndpoint);
-  
-      console.log("mint address: ");
-  
-      console.log(mintAddress);
-  
-      console.log("receiver address: ");
-  
-      console.log(receiverAddress);
+      const owner = new PublicKey(receiverAddress); 
       if (!mintAuthority) {
         return;
       }
@@ -344,18 +334,18 @@ const setTokensInStorage = (tokens:any) => {
         mintToken,
         owner,
       );
-      console.log("Associated Token Address:", associatedTokenTo.toBase58());
+      // console.log("Associated Token Address:", associatedTokenTo.toBase58());
       const checkTokenAccount =
         await connection.getAccountInfo(associatedTokenTo);
       console.log("checking token account...");
-      console.log(checkTokenAccount);
-      console.log("From account...");
+      // console.log(checkTokenAccount);
+      // console.log("From account...");
   
-      console.log(associatedTokenFrom);
+      // console.log(associatedTokenFrom);
       const transaction = new Transaction();
       if (!(await connection.getAccountInfo(associatedTokenTo))) {
         console.log("Token account doesn't exist. Creating now...");
-        console.log(wallet.publicKey);
+        // console.log(wallet.publicKey);
         transaction.add(
           createAssociatedTokenAccountInstruction(
             wallet.publicKey,
@@ -364,8 +354,7 @@ const setTokensInStorage = (tokens:any) => {
             mintToken,
           ),
         );
-      }
-      console.log();
+      } 
       transaction.add(
         createTransferInstruction(
           fromAccount.address,
@@ -376,7 +365,7 @@ const setTokensInStorage = (tokens:any) => {
       );
       console.log("Transaction created. Attempting to send...");
   
-      console.log(transaction); 
+      // console.log(transaction); 
       const signature = await wallet.sendTransaction(transaction, connection);
         await connection.confirmTransaction(signature,'confirmed')
       console.log("sending ....");
@@ -453,16 +442,7 @@ allTokens.map((token: any, idx: number) => (
           <input
             type="number"
             value={inputIdx==idx?amount:''}
-            onChange={(e) => { 
-              console.log("inside amount input idx");
-              
-              console.log(idx);
-              
-              console.log("inside amount input Inputidx");
-              
-              console.log(inputIdx);
-
-              setInputIdx(idx);setBtnIdx(idx);
+            onChange={(e) => {  setInputIdx(idx);setBtnIdx(idx);
                setAmount(e.target.value)}}
             placeholder="Amount"
             className="truncate p-3 bg-slate-800 text-white font-medium text-lg rounded-md"
@@ -470,8 +450,8 @@ allTokens.map((token: any, idx: number) => (
           <div>
             <button
               onClick={()=> {
-                console.log("btnIdx = ",btnIdx);
-                console.log("idx = ",idx);
+                // console.log("btnIdx = ",btnIdx);
+                // console.log("idx = ",idx);
                 
                 btnIdx == idx ? mintTokens(token.mintAddress):null}}
               className="p-3 ml-3 bg-teal-500 rounded-md hover:bg-teal-800 hover:text-white transition-all duration-500"

@@ -28,7 +28,7 @@ export const CreateTokenMint = () => {
   const getTokensFromStorage = () => {
     const storedTokens = localStorage.getItem('tokens');
     console.log('Tokens from localStorage:', storedTokens);
-    if(!storedTokens) return null;
+    if(!storedTokens) return [];
     return JSON.parse(storedTokens) || [];
   };
   

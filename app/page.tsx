@@ -39,12 +39,12 @@ export default function Home() {
     <ConnectionProvider endpoint={endpoint}>
       <WalletProvider wallets={[]} autoConnect >
         <WalletModalProvider>
-          <div className=" absolute right-2 flex justify-end p-3 ">
+          <div className="   right-2 flex justify-end p-3 ">
             <div className=" bg-gradient-to-r from-teal-200 to-purple-700 p-3 rounded-md">
               <SolBalance top={true} />
             </div>
           </div>
-          <div className=" home h-screen bg-slate-900 ">
+          <div className=" home   bg-slate-900 ">
             <SpotlightPreview />
             <div className="  pt-10">
               <h1 className="text-4xl md:text-7xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 bg-opacity-50">
@@ -62,9 +62,9 @@ export default function Home() {
                     <WalletDisconnectButton />
                   </div>
                 </div>
-                <div className=" flex justify-center mt-10 pb-14">
+                <div className="flex justify-center mt-10 pb-14">
                   <Tabs defaultValue="account" className=" max-w-4xl w-full px-10 flex justify-center flex-col">
-                    <TabsList onClick={() => setWarn(true)} className=" bg-black flex gap-10 p-7">
+                    <TabsList onClick={() => setWarn(true)} className=" sticky top-3 z-[999] bg-black flex gap-10 p-7">
                       <TabsTrigger value="AirDrop" className=" text-lg">
                         <div>
                           AirDrop

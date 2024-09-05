@@ -30,6 +30,7 @@ export const CreateTokenMint = () => {
   const [receiverAddress, setReceiverAddress] = useState<string>("");
   const [sendAmount, setSendAmount] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
+  // const [sendAmount, setSendAmount] = useState<string>("");
   const [tokenStates, setTokenStates] = useState<{ [key: number]: { amount: string, receiverAddress: string, sendAmount: string } }>({});
   const [tokens, setTokens] = useState([]);
 
@@ -39,17 +40,7 @@ export const CreateTokenMint = () => {
   const wallet = useWallet();
   const mintAuthority = wallet.publicKey;
   const { connection } = useConnection();
-
-  const handleInputChange = (idx: number, field: string, value: string) => {
-    setTokenStates((prevState) => ({
-      ...prevState,
-      [idx]: {
-        ...prevState[idx],
-        [field]: value,
-      },
-    }));
-  };
-
+ 
   if (!wallet.publicKey) {
     console.log("Wallet not connected!");
     return null;
@@ -74,8 +65,7 @@ const safeJSONStringify = (obj:any) => {
     return '';
   }
 };
-
-// Helper function to safely get tokens from localStorage
+ 
 const getTokensFromStorage = () => {
   const storedTokens = localStorage.getItem('tokens');
   // console.log('Tokens from localStorage:', storedTokens);
@@ -83,8 +73,7 @@ const getTokensFromStorage = () => {
 };
 
 
-
-// Helper function to safely set tokens in localStorage
+ 
 const setTokensInStorage = (tokens:any) => {
   const tokenString = safeJSONStringify(tokens);
   localStorage.setItem('tokens', tokenString);
@@ -133,7 +122,8 @@ const setTokensInStorage = (tokens:any) => {
       await connection.confirmTransaction(signature, "confirmed");
 
       setMintAdd(keypair.publicKey);
-      setTokens((prevTokens) => {
+      //@ts-ignore
+      setTokens((prevTokens:any) => {
         console.log('Previous tokens:', prevTokens);
         const updatedTokens = [
           ...prevTokens,
@@ -191,9 +181,9 @@ const setTokensInStorage = (tokens:any) => {
       const signature = await wallet.sendTransaction(transaction, connection);
       await connection.confirmTransaction(signature, "confirmed");
  
-      setTokens(prevTokens => {
+      setTokens((prevTokens:any) => {
         console.log('Previous tokens:', prevTokens);
-        const updatedTokens = prevTokens.map(token => 
+        const updatedTokens = prevTokens.map((token:any) => 
           token.mintAddress === mintAdd.toBase58() 
             ? { ...token, tokenAccountAddress: associatedTokenAddress.toBase58() }
             : token
@@ -214,7 +204,7 @@ const setTokensInStorage = (tokens:any) => {
   };
  
 
-  const mintTokens = async () => {
+  const mintTokens = async (minttt:any) => {
     if (amount === "") {
       toast.warning("Please enter the amount first");
       return;
@@ -228,16 +218,20 @@ const setTokensInStorage = (tokens:any) => {
 
     const id = toast.loading(`Minting ${amount} tokens....`);
     try {
-      if (!mintAdd) throw new Error("Mint address not set");
-
+    
+    // console.log(addres?.mintAddress);
+    
+      const mintt = new PublicKey(minttt)
+      if (!mintt) throw new Error("Mint address not set");
+      console.log(mintt);
       const associatedTokenAddress = await getAssociatedTokenAddress(
-        mintAdd,
+        mintt,
         wallet.publicKey
       );
 
       const mintTokens = new Transaction().add(
         createMintToInstruction(
-          mintAdd,
+          mintt,
           associatedTokenAddress,
           wallet.publicKey,
           BigInt(parseFloat(amount) * 1e9)
@@ -246,15 +240,26 @@ const setTokensInStorage = (tokens:any) => {
 
       const signature = await wallet.sendTransaction(mintTokens, connection);
       await connection.confirmTransaction(signature, "confirmed");
+ 
 
-      setBal((prevBal) => (parseFloat(prevBal) + parseFloat(amount)).toString());
+      setTokens((prevTokens:any) => {
+        console.log('Previous tokens:', prevTokens);
+        const updatedTokens = prevTokens.map((token:any) => 
+          token.mintAddress === mintt.toBase58() 
+            ? { ...token, bal: (token.bal || 0) + parseFloat(amount)}
+            : token
+        );
+        console.log('Updated tokens:', updatedTokens);
+        setTokensInStorage(updatedTokens);
+        return updatedTokens;
+      });
       toast.dismiss(id);
       toast.success(`${amount} Tokens Minted successfully`);
       setAmount("");
-    } catch (error) {
+    } catch (error:any) {
       console.error("Error minting tokens:", error);
       toast.dismiss(id);
-      toast.error("Error in Minting Tokens");
+      toast.error(`Error in Minting Tokens:${error.message}`);
     }
   };
 
@@ -389,125 +394,138 @@ const setTokensInStorage = (tokens:any) => {
     }
   };
   
-  return (
-    <div>
-      <Toaster richColors />
-      <div className="justify-center flex">
-        <button
-          onClick={createToken}
-          className="p-3 ml-3 bg-teal-500 rounded-md hover:bg-teal-800 hover:text-white transition-all duration-500"
-        >
-          Mint Tokens
-        </button>
+  return <div>
+  <Toaster richColors />
+  <div className="justify-center flex ">
+    <button
+      onClick={createToken}
+      className="p-3 ml-3 bg-teal-500 rounded-md hover:bg-teal-800 hover:text-white transition-all duration-500"
+    >
+      Create Tokens
+    </button>
+  </div>
+  {/* {allTokens.map((token)=><div>{token.mintAddress} <br /> {token.tokenAccountAddress}</div>)} */}
+ 
+  {allTokens.length !== 0 && (
+allTokens.map((token: any, idx: number) => (
+  <div key={idx} className="mt-10  bg-gradient-to-r rounded-md from-purple-400 to-purple-900 border-purple-400 py-5 shadow-xl p-2 px-4  shadow-gray-700 ">
+    <div className="flex flex-col">
+      <div> 
+        <div className=" flex gap-5">
+    <div className="text-xl font-medium p-2 bg-gradient-to-r rounded-md from-purple-500 to-teal-800 text-white">
+      Mint Supply : <div className=" inline font-mono text-2xl text-teal-300">{!token.bal ? 0 : token.bal}</div> 
+    </div>
+        <div className=" flex gap-7 bg-purple-600 rounded-md p-2">
+        <div className=" text-white text-xl">
+        Mint address :
+        </div>
+        <div className=" -ml-5">
+        <AddressCard value={token.mintAddress} />
+        </div>
+        </div>
+        </div>
       </div>
-      {/* {allTokens.map((token)=><div>{token.mintAddress} <br /> {token.tokenAccountAddress}</div>)} */}
-     
-      {allTokens.length !== 0 && (
-    allTokens.map((token: any, idx: number) => (
-      <div key={idx} className="mt-7 rounded-xl py-5 shadow-xl p-2 border-1 shadow-gray-700 ">
-        <div className="flex flex-col">
-          <div> 
-        <div className="text-xl font-medium">
-          Mint Supply: {bal === "0" ? 0 : bal}
+      <div className="mt-5 ">
+        <div className=" flex justify-center">
+        <button
+          onClick={tokenAccount}
+          className="p-3 bg-teal-500 rounded-md hover:bg-teal-800 hover:text-white transition-all duration-500 "
+        >
+          Create Token Account
+        </button>
         </div>
-            Your token Mint address:
-            <AddressCard value={token.mintAddress} />
+          {token.tokenAccountAddress && (
+        <div>
+          <div className=" mt-4 text-xl font-medium">
+            Token account Address :
           </div>
-          <div className="mt-5">
-            <button
-              onClick={tokenAccount}
-              className="p-3 bg-teal-500 rounded-md hover:bg-teal-800 hover:text-white transition-all duration-500"
-            >
-              Create Token Account
-            </button>
-            <div className="mt-2">
-              {token.tokenAccountAddress && (
-                <AddressCard value={token.tokenAccountAddress} />
-              )}
-            </div>
-          </div>
+        <div className="mt-2">
+            <AddressCard value={token.tokenAccountAddress} />
         </div>
+        </div>
+          )}
+      </div>
+    </div>
 
-        {token.tokenAccountAddress && (
+    {token.tokenAccountAddress && (
+      <div>
+        <div className="flex justify-center mt-5">
+          <input
+            type="number"
+            value={inputIdx==idx?amount:''}
+            onChange={(e) => { 
+              console.log("inside amount input idx");
+              
+              console.log(idx);
+              
+              console.log("inside amount input Inputidx");
+              
+              console.log(inputIdx);
+
+              setInputIdx(idx);setBtnIdx(idx);
+               setAmount(e.target.value)}}
+            placeholder="Amount"
+            className="truncate p-3 bg-slate-800 text-white font-medium text-lg rounded-md"
+          />
           <div>
-            <div className="flex justify-center mt-5">
-              <input
-                type="number"
-                value={inputIdx==idx?amount:''}
-                onChange={(e) => { 
-                  console.log("inside amount input idx");
-                  
-                  console.log(idx);
-                  
-                  console.log("inside amount input Inputidx");
-                  
-                  console.log(inputIdx);
+            <button
+              onClick={()=> {
+                console.log("btnIdx = ",btnIdx);
+                console.log("idx = ",idx);
+                
+                btnIdx == idx ? mintTokens(token.mintAddress):null}}
+              className="p-3 ml-3 bg-teal-500 rounded-md hover:bg-teal-800 hover:text-white transition-all duration-500"
+            >
+              Add tokens
+            </button>
+          </div>
+        </div>
 
-                  setInputIdx(idx);setBtnIdx(idx);
-                   setAmount(e.target.value)}}
-                placeholder="Amount"
-                className="truncate p-3 bg-slate-800 text-white font-medium text-lg rounded-md"
-              />
+        {token.bal && (
+          <div className="flex justify-center flex-col items-center mt-10">
+            <div className="text-2xl font-medium">Send Tokens</div>
+            <div className="flex justify-center gap-4 mt-4">
               <div>
+                <input
+                  type="text"
+                  value={inputIdx==idx?receiverAddress:''}
+                  onChange={(e) => {setInputIdx(idx);setBtnIdx(idx); setReceiverAddress(e.target.value)}}
+                  placeholder="Enter Receiver's Address"
+                  className="w-96 truncate p-3 bg-slate-800 text-white font-medium text-lg rounded-md"
+                />
+              </div>
+              <div>
+                <input
+                  type="number"
+                  value={inputIdx==idx?sendAmount:''}
+                  onChange={(e) => {   setInputIdx(idx);setBtnIdx(idx);  setSendAmount(e.target.value)}}
+                  placeholder="Amount"
+                  className="p-3 w-40 bg-slate-800 text-white font-medium text-lg rounded-md"
+                />
+              </div>
+              <div className="flex justify-center">
                 <button
-                  onClick={()=> {
-                    console.log("btnIdx = ",btnIdx);
-                    console.log("idx = ",idx);
-                    
-                    btnIdx == idx ? mintTokens():null}}
-                  className="p-3 ml-3 bg-teal-500 rounded-md hover:bg-teal-800 hover:text-white transition-all duration-500"
+                  onClick={sendTokens}
+                  className="p-3 px-4 bg-teal-500 rounded-md hover:bg-teal-800 hover:text-white transition-all duration-500"
                 >
-                  Add tokens
+                  Send
                 </button>
               </div>
             </div>
-
-            {bal !== '0' && (
-              <div className="flex justify-center flex-col items-center mt-10">
-                <div className="text-2xl font-medium">Send Tokens</div>
-                <div className="flex justify-center gap-4 mt-4">
-                  <div>
-                    <input
-                      type="text"
-                      value={tokenStates[idx]?.receiverAddress || ''}
-                      onChange={(e) => handleInputChange(idx, 'receiverAddress', e.target.value)}
-                      placeholder="Enter Receiver's Address"
-                      className="w-96 truncate p-3 bg-slate-800 text-white font-medium text-lg rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <input
-                      type="number"
-                      value={tokenStates[idx]?.sendAmount || ''}
-                      onChange={(e) => handleInputChange(idx, 'sendAmount', e.target.value)}
-                      placeholder="Amount"
-                      className="p-3 w-40 bg-slate-800 text-white font-medium text-lg rounded-md"
-                    />
-                  </div>
-                  <div className="flex justify-center">
-                    <button
-                      onClick={sendTokens}
-                      className="p-3 px-4 bg-teal-500 rounded-md hover:bg-teal-800 hover:text-white transition-all duration-500"
-                    >
-                      Send
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         )}
       </div>
-    ))
-  )}
-    </div>
-  );
+    )}
+  </div>
+))
+)}
+</div>
 };
 
 const AddressCard = ({ value }: { value: string }) => {
   return (
     <div>
-      <div className="truncate rounded-md text-sm font-medium text-black bg-purple-300 p-2">
+      <div className="trunca te rounded-md text-sm font-medium text-black bg-purple-300 p-2">
         {value}
       </div>
     </div>

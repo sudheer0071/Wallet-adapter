@@ -24,7 +24,7 @@ import { toast, Toaster } from "sonner";
 
 export const CreateTokenMint = () => {
   
-  let allTokens:string[] = []
+  let allTokens:any = []
   const getTokensFromStorage = () => {
     const storedTokens = localStorage.getItem('tokens');
     console.log('Tokens from localStorage:', storedTokens);
@@ -389,7 +389,7 @@ const setTokensInStorage = (tokens:any) => {
     console.log("inside useEffect...");
     
     setTokensInStorage(allTokens)
-  },[allTokens])
+  },[allTokens,tokens])
 
   // const updateTokens = (minttt:string)=>{
   //   setTokens((prevTokens:string[]) => {

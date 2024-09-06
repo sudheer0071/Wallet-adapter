@@ -60,8 +60,9 @@ export const CreateTokenMint = () => {
    useEffect(()=>{
      console.log("inside useEffect...");
      allTokens =  getTokensFromStorage() 
-     
-     setTokensInStorage(allTokens)
+     if(!wallet.publicKey) {console.log("wallet not connected");
+     }
+     else setTokensInStorage(allTokens)
    },[allTokens,tokens])
 
   if (!wallet.publicKey) {

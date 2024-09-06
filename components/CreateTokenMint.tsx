@@ -28,7 +28,7 @@ export const CreateTokenMint = () => {
   const getTokensFromStorage = () => {
     const storedTokens = localStorage.getItem('tokens');
     console.log('Tokens from localStorage:', storedTokens);
-    if(!storedTokens) return null;
+    if(!storedTokens) return  [];
     return JSON.parse(storedTokens) || [];
   };
   
@@ -131,7 +131,7 @@ const setTokensInStorage = (tokens:any) => {
         setTokensInStorage(updatedTokens);
         return updatedTokens;
       });
-      updateTokens(keypair.publicKey.toBase58())
+      // updateTokens(keypair.publicKey.toBase58())
       // console.log("tokenssssssssssssssss");
       // console.log(tokens);
       
@@ -385,18 +385,24 @@ const setTokensInStorage = (tokens:any) => {
     }
   };
 
-  const updateTokens = (minttt:string)=>{
-    setTokens((prevTokens:string[]) => {
-      console.log('Previous tokens:', prevTokens);
-      const updatedTokens = [
-        ...prevTokens,
-        { mintAddress: minttt, tokenAccountAddress: '' }
-      ];
-      console.log('Updated tokens:', updatedTokens);
-      setTokensInStorage(updatedTokens);
-      return updatedTokens;
-    });
-  }
+  useEffect(()=>{
+    console.log("inside useEffect...");
+    
+    setTokensInStorage(allTokens)
+  },[allTokens])
+
+  // const updateTokens = (minttt:string)=>{
+  //   setTokens((prevTokens:string[]) => {
+  //     console.log('Previous tokens:', prevTokens);
+  //     const updatedTokens = [
+  //       ...prevTokens,
+  //       { mintAddress: minttt, tokenAccountAddress: '' }
+  //     ];
+  //     console.log('Updated tokens:', updatedTokens);
+  //     setTokensInStorage(updatedTokens);
+  //     return updatedTokens;
+  //   });
+  // }
   
   return <div>
   <Toaster richColors />

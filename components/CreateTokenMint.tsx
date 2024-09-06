@@ -23,16 +23,8 @@ import { useEffect, useState } from "react";
 import { toast, Toaster } from "sonner";
 
 export const CreateTokenMint = () => {
-  
-  let allTokens:any = []
-  const getTokensFromStorage = () => {
-    const storedTokens = localStorage.getItem('tokens');
-    console.log('Tokens from localStorage:', storedTokens);
-    if(!storedTokens) return  [];
-    return JSON.parse(storedTokens) || [];
-  };
-  
-  allTokens =  getTokensFromStorage()
+
+   let allTokens:any = []
   //  console.log(allTokens); 
   const [mintAddress, setMintAddress] = useState<string>("");
   const [mintAdd, setMintAdd] = useState<PublicKey | null>(null);
@@ -56,7 +48,17 @@ export const CreateTokenMint = () => {
     console.log("Wallet not connected!");
     return null;
   }
- 
+
+  const getTokensFromStorage = () => {
+    const storedTokens = localStorage.getItem('tokens');
+    console.log('Tokens from localStorage:', storedTokens);
+    if(!storedTokens) return  [];
+    return JSON.parse(storedTokens) || [];
+  };
+  
+
+  allTokens =  getTokensFromStorage() 
+
   // Helper function to safely parse JSON
 const safeJSONParse = (str:any) => {
   try {
@@ -389,7 +391,7 @@ const setTokensInStorage = (tokens:any) => {
     console.log("inside useEffect...");
     
     setTokensInStorage(allTokens)
-  },[allTokens,tokens])
+  },[allTokens])
 
   // const updateTokens = (minttt:string)=>{
   //   setTokens((prevTokens:string[]) => {

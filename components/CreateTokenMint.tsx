@@ -24,7 +24,7 @@ import { toast, Toaster } from "sonner";
 
 export const CreateTokenMint = () => {
 
-   let allTokens:any = []
+   let allTokens:string[] = []
    
   const getTokensFromStorage =   () => {
     const storedTokens =  localStorage.getItem('tokens');
@@ -32,7 +32,9 @@ export const CreateTokenMint = () => {
     if(!storedTokens) return  [];
     return JSON.parse(storedTokens) || [];
   };
-   
+  
+  allTokens = getTokensFromStorage();
+
   //  console.log(allTokens); 
   const [mintAddress, setMintAddress] = useState<string>("");
   const [mintAdd, setMintAdd] = useState<PublicKey | null>(null);
@@ -59,7 +61,7 @@ export const CreateTokenMint = () => {
      
      setTokensInStorage(allTokens)
    },[allTokens])
-   
+
   if (!wallet.publicKey) {
     console.log("Wallet not connected!");
     return null;

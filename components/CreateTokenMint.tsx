@@ -24,7 +24,7 @@ import { toast, Toaster } from "sonner";
 
 export const CreateTokenMint = () => {
   
-  let allTokens:any = []
+  let allTokens:string[] = []
   const getTokensFromStorage = () => {
     const storedTokens = localStorage.getItem('tokens');
     console.log('Tokens from localStorage:', storedTokens);

@@ -36,6 +36,7 @@ export const CreateTokenMint = () => {
   allTokens = getTokensFromStorage();
 
   //  console.log(allTokens); 
+  const [componentKey, setComponentKey] = useState(0);
   const [mintAddress, setMintAddress] = useState<string>("");
   const [mintAdd, setMintAdd] = useState<PublicKey | null>(null);
   const [bal, setBal] = useState<string>("0");
@@ -60,7 +61,7 @@ export const CreateTokenMint = () => {
      allTokens =  getTokensFromStorage() 
      
      setTokensInStorage(allTokens)
-   },[allTokens])
+   },[allTokens,tokens])
 
   if (!wallet.publicKey) {
     console.log("Wallet not connected!");
@@ -131,7 +132,7 @@ const setTokensInStorage = (tokens:any) => {
 
       setMintAdd(keypair.publicKey);
       //@ts-ignore
-      setTokens((prevTokens) => {
+      setTokens((prevTokens:string[]) => {
         console.log('Previous tokens:', prevTokens);
         const updatedTokens = [
           ...prevTokens,
@@ -145,8 +146,8 @@ const setTokensInStorage = (tokens:any) => {
       // console.log("tokenssssssssssssssss");
       // console.log(tokens);
       
-      
       setMintAddress(keypair.publicKey.toBase58())
+      setComponentKey(prevKey => prevKey + 1);
       toast.dismiss(id);
       toast.success("Token Minted Successfully!");
     } catch (error) {
@@ -408,7 +409,7 @@ const setTokensInStorage = (tokens:any) => {
   //   });
   // }
   
-  return <div>
+  return <div key={componentKey}>
   <Toaster richColors />
   <div className="justify-center flex ">
     <button

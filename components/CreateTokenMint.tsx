@@ -1,3 +1,4 @@
+"use client"
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,

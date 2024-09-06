@@ -409,7 +409,7 @@ const setTokensInStorage = (tokens:any) => {
   //   });
   // }
   
-  return <div key={componentKey}>
+  return <div >
   <Toaster richColors />
   <div className="justify-center flex ">
     <button

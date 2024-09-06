@@ -421,7 +421,9 @@ const setTokensInStorage = (tokens:any) => {
     </button>
   </div>
   {/* {allTokens.map((token)=><div>{token.mintAddress} <br /> {token.tokenAccountAddress}</div>)} */}
- 
+  
+  {/* allTokens will not work here because its not a state variable !!!!!!!!!! */}
+
   {tokens.length != 0 && (
 tokens.map((token: any, idx: number) => (
   <div key={idx} className="mt-10  bg-gradient-to-r rounded-md from-purple-400 to-purple-900 border-purple-400 py-5 shadow-xl p-2 px-4  shadow-gray-700 ">

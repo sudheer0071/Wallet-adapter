@@ -520,9 +520,14 @@ console.log(`${R2}/${mintName}.json`);
   // }
 
   return <div >
-    <Toaster richColors />
-    <div className=" flex flex-col justify-center items-center">
-      <div className=" flex gap-4">
+    <div className=" hidden md:inline lg:inline ">
+        <Toaster richColors position="bottom-right"/>
+        </div>
+        <div className=" md:hidden lg:hidden">
+        <Toaster richColors  position="top-center"/>
+        </div>
+    <div className="flex flex-col justify-center items-center">
+      <div className=" lg:flex gap-4">
         <Inputs label="Token Name" placeholder="eg: NCIKK" value={mintName} onchange={(e:any)=> setMintName(e.target.value)} />
         <Inputs label="Token Symbol" placeholder="eg: NK" value={mintSymbol} onchange={(e:any)=> setMintSymbol(e.target.value)} />
         <Inputs label="Image url" placeholder="eg: favicon.com/img.jpb" value={mintImg} onchange={(e:any)=> setMintImg(e.target.value)} />
@@ -547,11 +552,11 @@ console.log(`${R2}/${mintName}.json`);
         <div key={idx} className="mt-10  bg-gradient-to-r rounded-md from-purple-400 to-purple-900 border-purple-400 py-5 shadow-xl p-2 px-4  shadow-gray-700 ">
           <div className="flex flex-col">
             <div>
-              <div className=" flex gap-5 justify-center">
+              <div className=" md:flex lg:flex gap-5  justify-center">
                 <div className="text-xl font-medium p-2 bg-gradient-to-r rounded-md from-purple-500 to-teal-800 text-white">
                   Mint Supply : <div className=" inline font-mono text-2xl text-teal-300">{!token.bal ? 0 : token.bal}</div>
                 </div>
-                <div className=" flex gap-3 bg-gradient-to-r  from-slate-400 to-teal-800 rounded-md p-1 px-2">
+                <div className=" lg:mt-0 md:mt-0 mt-3 flex gap-3 bg-gradient-to-r  from-slate-400 to-teal-800 rounded-md p-1 px-2">
                   <div>
                    <img width={50} src={token.mintImg} alt={token.mintName} className=" rounded-full" />
                   </div>
@@ -565,8 +570,8 @@ console.log(`${R2}/${mintName}.json`);
                   </div>
                 </div>
                 
-                <div className=" flex gap-7 bg-purple-600 rounded-md p-2">
-                  <div className=" text-white text-xl">
+                <div className="lg:mt-0 md:mt-0 mt-3 flex gap-7 bg-purple-600 rounded-md p-2">
+                  <div className=" text-white md:text-xl lg:text-xl">
                     Mint address :
                   </div>
                   <div className=" -ml-5">
@@ -609,7 +614,7 @@ console.log(`${R2}/${mintName}.json`);
                     setAmount(e.target.value)
                   }}
                   placeholder="Amount"
-                  className="truncate p-3 bg-slate-800 text-white font-medium text-lg rounded-md"
+                  className="truncate p-1 px-2 md:p-2 lg:p-3 bg-slate-800 text-white font-medium text-lg rounded-md"
                 />
                 <div>
                   <button
@@ -619,7 +624,7 @@ console.log(`${R2}/${mintName}.json`);
 
                       btnIdx == idx ? mintTokens(token.mintAddress) : null
                     }}
-                    className="p-3 ml-3 bg-teal-500 rounded-md hover:bg-teal-800 hover:text-white transition-all duration-500"
+                    className=" p-1 md:p-2 lg:p-3 ml-3 bg-teal-500 rounded-md hover:bg-teal-800 hover:text-white transition-all duration-500"
                   >
                     Add tokens
                   </button>
@@ -629,26 +634,26 @@ console.log(`${R2}/${mintName}.json`);
               {token.bal && (
                 <div className="flex justify-center flex-col items-center mt-10">
                   <div className="text-2xl font-medium">Send Tokens</div>
-                  <div className="flex justify-center gap-4 mt-4">
+                  <div className=" md:flex lg:flex justify-center gap-4 mt-4">
                     <div>
                       <input
                         type="text"
                         value={inputIdx == idx ? receiverAddress : ''}
                         onChange={(e) => { setInputIdx(idx); setBtnIdx(idx); setReceiverAddress(e.target.value) }}
                         placeholder="Enter Receiver's Address"
-                        className="w-96 truncate p-3 bg-slate-800 text-white font-medium text-lg rounded-md"
+                        className=" w-80 md:w-96 lg:w-96 truncate p-3 bg-slate-800 text-white font-medium text-lg rounded-md"
                       />
                     </div>
-                    <div>
+                    <div className=" md:flex-none lg:flex-none flex justify-center">
                       <input
                         type="number"
                         value={inputIdx == idx ? sendAmount : ''}
                         onChange={(e) => { setInputIdx(idx); setBtnIdx(idx); setSendAmount(e.target.value) }}
                         placeholder="Amount"
-                        className="p-3 w-40 bg-slate-800 text-white font-medium text-lg rounded-md"
+                        className="p-3 w-40 mt-3  lg:mt-0 md:mt-0 bg-slate-800 text-white font-medium text-lg rounded-md"
                       />
                     </div>
-                    <div className="flex justify-center">
+                    <div className="flex justify-center mt-3 md:mt-0 lg:mt-0">
                       <button
                         onClick={() => sendTokens(token.mintAddress)}
                         className="p-3 px-4 bg-teal-500 rounded-md hover:bg-teal-800 hover:text-white transition-all duration-500"
@@ -680,9 +685,9 @@ const AddressCard = ({ value,small }: { value: string,small?:boolean }) => {
 const Inputs = ({label,value, placeholder, onchange,}:{label:string,value:string,placeholder:string,onchange:any})=>{
   return <div>
   <div>
-  <label htmlFor={label}>{label}</label>
+  <label htmlFor={label} className=" text-lg font-medium">{label}:</label>
 <div>
-  <input value={value} onChange={onchange} placeholder={placeholder} type="text" className={` ${label.includes('Symbol')?' w-32':label.includes('Supply')?' w-32':''} truncate p-3 bg-slate-800 text-white font-medium text-lg rounded-md`} />
+  <input value={value} onChange={onchange} placeholder={placeholder} type="text" className={` ${label.includes('Symbol')?' md:w-32 lg:w-32':label.includes('Supply')?' w-32':''} truncate p-3 bg-slate-800 w-80 text-white font-medium text-lg rounded-md`} />
 </div>
 </div>
   </div>

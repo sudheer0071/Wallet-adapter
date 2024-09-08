@@ -64,16 +64,16 @@ export default function Home() {
                 </div>
                 <div className="flex justify-center mt-10 pb-14">
                   <Tabs defaultValue="account" className=" max-w-5xl w-full px-10 flex justify-center flex-col">
-                    <TabsList onClick={() => setWarn(true)} className=" sticky top-3 z-[999] bg-black flex gap-10 p-7">
+                    <TabsList onClick={() => setWarn(true)} className=" sticky top-3 z-[999] bg-black grid md:grid-cols-4 sm:grid-cols-3 grid-cols-2 lg:grid-cols-5 px-5 pb-28 md:pb-20 lg:pb-12 pt-2">
                       <TabsTrigger value="AirDrop" className=" text-lg">
                         <div>
                           AirDrop
                         </div>
                       </TabsTrigger>
-                      <TabsTrigger value="sendSol" className=" text-lg">Send sol</TabsTrigger>
-                      <TabsTrigger value="checkSol" className=" text-lg">Check sol</TabsTrigger>
-                      <TabsTrigger value="signature" className=" text-lg">Sign a Message</TabsTrigger>
-                      <TabsTrigger value="createToken" className=" text-lg">Create Token</TabsTrigger>
+                      <TabsTrigger value="sendSol" className=" text-base md:text-lg lg:text-lg">Send sol</TabsTrigger>
+                      <TabsTrigger value="checkSol" className=" text-base md:text-lg lg:text-lg">Check sol</TabsTrigger>
+                      <TabsTrigger value="signature" className=" text-base md:text-lg lg:text-lg">Sign a Message</TabsTrigger>
+                      <TabsTrigger value="createToken" className=" text-base md:text-lg lg:text-lg">Create Token</TabsTrigger>
                     </TabsList>
                     {warn && <div className={`${walletConnect ? ' hidden' : ''} text-center absolute font-semibold text-white z-[10] left-[38%] mt-10 text-3xl`}>
                       <div className=" p-2 bg-purple-700 rounded-md px-12">

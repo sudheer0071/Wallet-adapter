@@ -56,7 +56,12 @@ else{
   }
   
   return <div>
-    <Toaster richColors />
+    <div className=" hidden md:inline lg:inline ">
+        <Toaster richColors  position="bottom-right"/>
+        </div>
+        <div className=" md:hidden lg:hidden">
+        <Toaster richColors position="top-center"/>
+        </div>
     <input type="number" value={amount} onChange={(e:any)=>setAmount(e.target.value)} placeholder="Amount" className=" p-3 bg-slate-800 text-white font-medium text-lg rounded-md" />
     <button onClick={RequestAirDrop} className=" p-3 ml-3 bg-teal-500 rounded-md hover:bg-teal-800 hover:text-white transition-all duration-500">AirDrop</button>
   </div>

@@ -63,7 +63,12 @@ else{
   }
 
   return <div>
-    <Toaster richColors/>
+     <div className=" hidden md:inline lg:inline ">
+        <Toaster richColors  position="bottom-right"/>
+        </div>
+        <div className=" md:hidden lg:hidden">
+        <Toaster richColors position="top-center"/>
+        </div>
     <div className=" flex justify-center w-full px-2">
    <input type="text" value={message} onChange={(e:any)=>setMessage(e.target.value)} placeholder="Enter Reciever's Address" className=" w-full truncate p-3 bg-slate-800 text-white font-medium text-lg rounded-md" />
     </div>

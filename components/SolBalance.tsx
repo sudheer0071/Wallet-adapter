@@ -40,7 +40,12 @@ else{
   }
 
   return <div className={` ${top?'':'bg-gradient-to-r rounded-md from-purple-200 to-teal-600 p-3'}  flex justify-center items-center`}>
-    <Toaster richColors/>
+      <div className=" hidden md:inline lg:inline ">
+        <Toaster richColors  position="bottom-right"/>
+        </div>
+        <div className=" md:hidden lg:hidden">
+        <Toaster richColors position="top-center"/>
+        </div>
      <div className="">
       <img width={50} className=" rounded-full" src="https://api.phantom.app/image-proxy/?image=https%3A%2F%2Fcdn.jsdelivr.net%2Fgh%2Fsolana-labs%2Ftoken-list%40main%2Fassets%2Fmainnet%2FSo11111111111111111111111111111111111111112%2Flogo.png&fit=cover&width=160&height=160" alt="" />
      </div>

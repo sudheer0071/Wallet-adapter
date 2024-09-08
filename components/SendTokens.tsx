@@ -52,7 +52,12 @@ else{
   }
   
   return <div>
-    <Toaster richColors />
+      <div className=" hidden md:inline lg:inline ">
+        <Toaster richColors  position="bottom-right"/>
+        </div>
+        <div className=" md:hidden lg:hidden">
+        <Toaster richColors position="top-center"/>
+        </div>
       <label htmlFor="To" className=" font-semibold text-xl">To</label>
       <div className="">
        <input type="text" value={to} onChange={(e:any)=>setTo(e.target.value)} placeholder="Enter Reciever's Address" className=" truncate p-3 bg-slate-800 text-white font-medium text-lg rounded-md" />

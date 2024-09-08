@@ -75,9 +75,10 @@ export default function Home() {
                       <TabsTrigger value="signature" className=" text-base md:text-lg lg:text-lg">Sign a Message</TabsTrigger>
                       <TabsTrigger value="createToken" className=" text-base md:text-lg lg:text-lg">Create Token</TabsTrigger>
                     </TabsList>
-                    {warn && <div className={`${walletConnect ? ' hidden' : ''} text-center absolute font-semibold text-white z-[10] left-[38%] mt-10 text-3xl`}>
+                    {warn && <div className={`${walletConnect ? ' hidden' : ''} text-center absolute md:font-semibold lg:font-semibold text-white z-[10] md:left-[20%] lg:left-[38%] mt-10 text-3xl`}> 
                       <div className=" p-2 bg-purple-700 rounded-md px-12">
                       Please Connect your <br /> Wallet first
+                   
                       </div>
                     </div>}
 

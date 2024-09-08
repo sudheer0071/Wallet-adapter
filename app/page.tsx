@@ -63,7 +63,7 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="flex justify-center mt-10 pb-14">
-                  <Tabs defaultValue="account" className=" max-w-4xl w-full px-10 flex justify-center flex-col">
+                  <Tabs defaultValue="account" className=" max-w-5xl w-full px-10 flex justify-center flex-col">
                     <TabsList onClick={() => setWarn(true)} className=" sticky top-3 z-[999] bg-black flex gap-10 p-7">
                       <TabsTrigger value="AirDrop" className=" text-lg">
                         <div>

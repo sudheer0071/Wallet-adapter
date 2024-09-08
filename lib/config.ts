@@ -1,0 +1,1 @@
+export const R2 = "https://pub-424d4bac235c4584a36b72afee99aca1.r2.dev"

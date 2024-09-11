@@ -621,7 +621,7 @@ console.log(`${R2}/${mintName}.json`);
 const AddressCard = ({ value,small,onclick }: { value: string,small?:boolean,onclick:any }) => {
   return (
     <div>
-      <div onClick={onclick} className={` ${small?' w-60d':''} cursor-pointer lg:w-full md:w-4/6 w-72  truncate rounded-md text-sm font-medium text-black bg-purple-300 p-2`}>
+      <div onClick={onclick} className={` cursor-pointer lg:w-full md:w-4/6 w-72  truncate rounded-md text-sm font-medium text-black bg-purple-300 p-2`}>
       <div className="hover:scale-105 transition-all duration-300 hover:font-semibold">
         {value}
       </div>

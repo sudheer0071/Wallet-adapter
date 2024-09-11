@@ -119,9 +119,13 @@ export const CreateTokenMint = () => {
 
   // localStorage.setItem('tokens',JSON.stringify(tokens))
 
+  const copyToclicpBoard = (text:string)=>{
+    navigator.clipboard.writeText(text)
+    toast.success('Copied to clipboard!')
+  }
 
   const createToken = async () => {
-    if (mintName==''||mintSymbol==''||mintImg=='') {
+    if (mintName==''||mintSymbol==''||mintImg==''||mintSupply=='') {
       toast.warning("Please enter all the feilds.")
       return;
     }
@@ -170,6 +174,13 @@ console.log(`${R2}/${mintName}.json`);
       const metaDataLen = TYPE_SIZE* LENGTH_SIZE + pack(metaData).length;
       const lamports = await connection.getMinimumBalanceForRentExemption(minLen + metaDataLen);
 
+       const ATA =  getAssociatedTokenAddressSync(
+        keypair.publicKey,
+        wallet.publicKey,
+        false,
+        TOKEN_2022_PROGRAM_ID
+      ) 
+
       const transaction = new Transaction().add(
         SystemProgram.createAccount({
           fromPubkey: wallet.publicKey,
@@ -189,7 +200,22 @@ console.log(`${R2}/${mintName}.json`);
           uri:metaData.uri,
           mintAuthority:wallet.publicKey,
           updateAuthority:wallet.publicKey,
-        })
+        }),
+        createAssociatedTokenAccountInstruction(
+                wallet.publicKey,
+                ATA,
+                wallet.publicKey,
+                keypair.publicKey,
+                TOKEN_2022_PROGRAM_ID
+              ),
+              createMintToInstruction(
+                keypair.publicKey,
+                ATA,
+                wallet.publicKey,
+                BigInt(parseFloat(mintSupply)*1e9),
+                [],
+                TOKEN_2022_PROGRAM_ID
+              )
       );
       transaction.feePayer = wallet.publicKey;
       transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
@@ -198,28 +224,28 @@ console.log(`${R2}/${mintName}.json`);
       const signature = await wallet.sendTransaction(transaction, connection );
 
       await connection.confirmTransaction(signature, "confirmed");
-
+ 
       setMintAdd(keypair.publicKey);
       //@ts-ignore
       setTokens((prevTokens: string[]) => {
         console.log('Previous tokens:', prevTokens);
         const updatedTokens = [
           ...prevTokens,
-          { mintAddress: keypair.publicKey.toBase58(), tokenAccountAddress: '',mintImg, mintName, mintSymbol }
+          { mintAddress: keypair.publicKey.toBase58(), tokenAccountAddress: ATA.toBase58(),mintImg, mintName, mintSymbol,bal: parseFloat(mintSupply)  }
         ];
         console.log('Updated tokens:', updatedTokens);
         setTokensInStorage(updatedTokens);
         return updatedTokens;
-      });
-      // updateTokens(keypair.publicKey.toBase58())
-      // console.log("tokenssssssssssssssss");
-      // console.log(tokens);
+      }); 
 
       setMintAddress(keypair.publicKey.toBase58())
+      setTokenAccountAddress(ATA.toBase58());
+
       setComponentKey(prevKey => prevKey + 1);
       setMintName('')
       setMintSymbol('')
       setMintImg('')
+      setMintSupply('')
       toast.dismiss(id);
       toast.success("Token Minted Successfully!");
     }
@@ -229,87 +255,7 @@ console.log(`${R2}/${mintName}.json`);
       toast.error("Error in Minting Tokens");
     }
   };
-
-  const tokenAccount = async (minttt: string) => {
-  
-    const id = toast.loading("Creating Token Account..");
-    if (!wallet.publicKey) {
-      console.log("Wallet not connected!");
-      return null;
-    }
-
-    console.log("mintAdd...");
-
-    console.log(minttt);
-    try {
-      if (!minttt) throw new Error("Mint address not set");
-      const mintt = new PublicKey(minttt)
-      const associatedTokenAddress =   getAssociatedTokenAddressSync(
-        mintt,
-        wallet.publicKey,
-        false,
-        TOKEN_2022_PROGRAM_ID
-      );
-
-      const ataInfo = await connection.getAccountInfo(associatedTokenAddress);
-      if (ataInfo !== null) {
-        toast.dismiss(id);
-        toast.error("Token account already associated with this wallet");
-        return;
-      }
-
-      const transaction = new Transaction().add(
-        createAssociatedTokenAccountInstruction(
-          wallet.publicKey,
-          associatedTokenAddress,
-          wallet.publicKey,
-          mintt,
-          TOKEN_2022_PROGRAM_ID
-        )
-      );
-
-      const signature = await wallet.sendTransaction(transaction, connection);
-      await connection.confirmTransaction(signature, "confirmed");
-
-      // const ATA = await getAssociatedTokenAddress(mintt,wallet.publicKey, false,TOKEN_2022_PROGRAM_ID)
-
-      // const transaction2 = new Transaction().add(
-      //   createMintToInstruction(
-      //     mintt,
-      //     ATA,
-      //     wallet.publicKey,
-      //     BigInt(parseFloat(mintSupply) * 1e9),
-      //     [],
-      //     TOKEN_2022_PROGRAM_ID
-      //   )
-      // )
-
-      // const signature2 = await wallet.sendTransaction(transaction2,connection)
-      // await connection.confirmTransaction(signature2, "confirmed");
-      
-      setTokens((prevTokens: any) => {
-        console.log('Previous tokens:', prevTokens);
-        const updatedTokens = prevTokens.map((token: any) =>
-          token.mintAddress === mintt.toBase58()
-            ? { ...token, bal: (token.bal || 0) + parseFloat(mintSupply), tokenAccountAddress: associatedTokenAddress.toBase58() }
-            : token
-        );
-        console.log('Updated tokens:', updatedTokens);
-        setTokensInStorage(updatedTokens);
-        return updatedTokens;
-      });
-
-      setTokenAccountAddress(associatedTokenAddress.toBase58());
-      toast.dismiss(id);
-      toast.success("Token Account Created successfully!");
-    } catch (error) {
-      console.error("Error creating token account:", error);
-      toast.dismiss(id);
-      toast.error("Something went wrong :/");
-    }
-  };
-
-
+ 
   const mintTokens = async (minttt: any) => {
     if (amount === "") {
       toast.warning("Please enter the amount first");
@@ -531,7 +477,7 @@ console.log(`${R2}/${mintName}.json`);
         <Inputs label="Token Name" placeholder="eg: NCIKK" value={mintName} onchange={(e:any)=> setMintName(e.target.value)} />
         <Inputs label="Token Symbol" placeholder="eg: NK" value={mintSymbol} onchange={(e:any)=> setMintSymbol(e.target.value)} />
         <Inputs label="Image url" placeholder="eg: favicon.com/img.jpb" value={mintImg} onchange={(e:any)=> setMintImg(e.target.value)} />
-        {/* <Inputs label="Initial Supply" placeholder="eg: 100" value={mintSupply} onchange={(e)=> setMintSupply(e.target.value)} /> */}
+        <Inputs label="Initial Supply" placeholder="eg: 100" value={mintSupply} onchange={(e:any)=> setMintSupply(e.target.value)} />
    
       </div>
     <div className=" flex justify-center mt-3">
@@ -575,7 +521,7 @@ console.log(`${R2}/${mintName}.json`);
                     Mint address :
                   </div>
                   <div className=" -ml-5">
-                    <AddressCard small={true} value={token.mintAddress} />
+                    <AddressCard onclick={copyToclicpBoard} small={true} value={token.mintAddress} />
                   </div>
                 </div>
 
@@ -583,12 +529,12 @@ console.log(`${R2}/${mintName}.json`);
             </div>
             <div className="mt-5 ">
               <div className=" flex justify-center">
-                <button
+                {/* <button
                   onClick={() => tokenAccount(token.mintAddress)}
                   className="p-3 bg-teal-500 rounded-md hover:bg-teal-800 hover:text-white transition-all duration-500 "
                 >
                   Create Token Account
-                </button>
+                </button> */}
               </div>
               {token.tokenAccountAddress && (
                 <div>
@@ -596,7 +542,7 @@ console.log(`${R2}/${mintName}.json`);
                     Token account Address :
                   </div>
                   <div className="mt-2">
-                    <AddressCard value={token.tokenAccountAddress} />
+                    <AddressCard onclick={copyToclicpBoard} value={token.tokenAccountAddress} />
                   </div>
                 </div>
               )}
@@ -626,7 +572,7 @@ console.log(`${R2}/${mintName}.json`);
                     }}
                     className=" p-1 md:p-2 lg:p-3 ml-3 bg-teal-500 rounded-md hover:bg-teal-800 hover:text-white transition-all duration-500"
                   >
-                    Add tokens
+                    Add Mint supply
                   </button>
                 </div>
               </div>
@@ -672,11 +618,13 @@ console.log(`${R2}/${mintName}.json`);
   </div>
 };
 
-const AddressCard = ({ value,small }: { value: string,small?:boolean }) => {
+const AddressCard = ({ value,small,onclick }: { value: string,small?:boolean,onclick:any }) => {
   return (
     <div>
-      <div className={` ${small?' w-60':''} truncate rounded-md text-sm font-medium text-black bg-purple-300 p-2`}>
+      <div onClick={onclick} className={` ${small?' w-60d':''} cursor-pointer lg:w-full md:w-4/6 w-72  truncate rounded-md text-sm font-medium text-black bg-purple-300 p-2`}>
+      <div className="hover:scale-105 transition-all duration-300 hover:font-semibold">
         {value}
+      </div>
       </div>
     </div>
   );
@@ -687,7 +635,7 @@ const Inputs = ({label,value, placeholder, onchange,}:{label:string,value:string
   <div>
   <label htmlFor={label} className=" text-lg font-medium">{label}:</label>
 <div>
-  <input value={value} onChange={onchange} placeholder={placeholder} type="text" className={` ${label.includes('Symbol')?' md:w-32 lg:w-32':label.includes('Supply')?' w-32':''} truncate p-3 bg-slate-800 w-80 text-white font-medium text-lg rounded-md`} />
+  <input value={value} onChange={onchange} placeholder={placeholder} type="text" className={` ${label.includes('Symbol')?' md:w-32 lg:w-32':label.includes('Supply')?' w-36':''} truncate p-3 bg-slate-800 w-80 text-white font-medium text-lg rounded-md`} />
 </div>
 </div>
   </div>

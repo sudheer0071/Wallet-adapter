@@ -153,7 +153,7 @@ export const CreateTokenMint = () => {
         image: mintImg
       }, {
         headers: {
-          "Content-Type": 'application/json'
+          "Content-Type": 'text/plain'
         }
       })
 
@@ -167,7 +167,7 @@ console.log(`${R2}/${mintName}.json`);
         name: mintName,
         symbol: mintSymbol,
         uri: `${R2}/${mintName}.json`,
-        additionalMetadata: [],
+        additionalMetadata: [], 
       }
 
       const minLen = getMintLen([ExtensionType.MetadataPointer])
@@ -478,6 +478,7 @@ console.log(`${R2}/${mintName}.json`);
         <Inputs label="Token Symbol" placeholder="eg: NK" value={mintSymbol} onchange={(e:any)=> setMintSymbol(e.target.value)} />
         <Inputs label="Image url" placeholder="eg: favicon.com/img.jpb" value={mintImg} onchange={(e:any)=> setMintImg(e.target.value)} />
         <Inputs label="Initial Supply" placeholder="eg: 100" value={mintSupply} onchange={(e:any)=> setMintSupply(e.target.value)} />
+      
    
       </div>
     <div className=" flex justify-center mt-3">
@@ -635,7 +636,7 @@ const Inputs = ({label,value, placeholder, onchange,}:{label:string,value:string
   <div>
   <label htmlFor={label} className=" text-lg font-medium">{label}:</label>
 <div>
-  <input value={value} onChange={onchange} placeholder={placeholder} type="text" className={` ${label.includes('Symbol')?' md:w-32 lg:w-32':label.includes('Supply')?' w-36':''} truncate p-3 bg-slate-800 w-80 text-white font-medium text-lg rounded-md`} />
+  <input value={value} onChange={onchange} placeholder={placeholder} type="text" className={` ${label.includes('Symbol')?' md:w-32 lg:w-32':label.includes('Supply')?'w-36':' w-80'} truncate p-3 bg-slate-800 text-white font-medium text-lg rounded-md`} />
 </div>
 </div>
   </div>

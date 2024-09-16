@@ -522,7 +522,7 @@ console.log(`${R2}/${mintName}.json`);
                     Mint address :
                   </div>
                   <div className=" -ml-5">
-                    <AddressCard onclick={copyToclicpBoard} small={true} value={token.mintAddress} />
+                    <AddressCard onclick={()=>copyToclicpBoard(token.mintAddress)} small={true} value={token.mintAddress} />
                   </div>
                 </div>
 
@@ -543,7 +543,7 @@ console.log(`${R2}/${mintName}.json`);
                     Token account Address :
                   </div>
                   <div className="mt-2">
-                    <AddressCard onclick={copyToclicpBoard} value={token.tokenAccountAddress} />
+                    <AddressCard onclick={()=>copyToclicpBoard(token.tokenAccountAddress)} value={token.tokenAccountAddress} />
                   </div>
                 </div>
               )}

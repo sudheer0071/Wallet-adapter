@@ -452,19 +452,6 @@ console.log(`${R2}/${mintName}.json`);
     }
   };
 
-  // const updateTokens = (minttt:string)=>{
-  //   setTokens((prevTokens:string[]) => {
-  //     console.log('Previous tokens:', prevTokens);
-  //     const updatedTokens = [
-  //       ...prevTokens,
-  //       { mintAddress: minttt, tokenAccountAddress: '' }
-  //     ];
-  //     console.log('Updated tokens:', updatedTokens);
-  //     setTokensInStorage(updatedTokens);
-  //     return updatedTokens;
-  //   });
-  // }
-
   return <div >
     <div className=" hidden md:inline lg:inline ">
         <Toaster richColors position="bottom-right"/>

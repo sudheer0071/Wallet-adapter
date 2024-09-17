@@ -1,34 +1,24 @@
 "use client"
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import {
-  ASSOCIATED_TOKEN_PROGRAM_ID,
+import { 
   createAssociatedTokenAccountInstruction,
-  createInitializeMetadataPointerInstruction,
-  createInitializeMint2Instruction,
+  createInitializeMetadataPointerInstruction, 
   createInitializeMintInstruction,
   createMintToInstruction,
   createTransferInstruction,
-  ExtensionType,
-  getAccount,
+  ExtensionType, 
   getAssociatedTokenAddress,
-  getAssociatedTokenAddressSync,
-  getMinimumBalanceForRentExemptMint,
-  getMint,
+  getAssociatedTokenAddressSync,  
   getMintLen,
-  LENGTH_SIZE,
-  MINT_SIZE,
-  TOKEN_2022_PROGRAM_ID,
-  TOKEN_PROGRAM_ID,
+  LENGTH_SIZE, 
+  TOKEN_2022_PROGRAM_ID, 
   TYPE_SIZE,
 } from "@solana/spl-token";
 import { createInitializeInstruction, pack } from '@solana/spl-token-metadata';
 import axios from 'axios'
-import {
-  Connection,
+import { 
   Keypair,
-  PublicKey,
-  sendAndConfirmRawTransaction,
-  sendAndConfirmTransaction,
+  PublicKey, 
   SystemProgram,
   Transaction,
 } from "@solana/web3.js";

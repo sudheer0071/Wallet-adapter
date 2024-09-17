@@ -1,11 +1,10 @@
 "use client"
 
 import { SpotlightPreview } from "@/components/SpotlightBackground";
-import { ConnectionProvider, useWallet, WalletProvider } from '@solana/wallet-adapter-react'
-import { Connection } from '@solana/web3.js'
+import { ConnectionProvider, useWallet, WalletProvider } from '@solana/wallet-adapter-react' 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-import { LucideRefreshCcw, RefreshCcw } from 'lucide-react'
+import { RefreshCcw } from 'lucide-react'
 
 import {
   WalletModalProvider,
@@ -23,8 +22,7 @@ import { SolBalance } from "@/components/SolBalance";
 import { SendTokens } from "@/components/SendTokens";
 import { SignMessage } from "@/components/SignMessage";
 import { useRecoilState } from "recoil";
-import { sendState, walletConnectState } from "./RecoilContextProvider";
-import { toast } from "sonner";
+import { sendState, walletConnectState } from "./RecoilContextProvider"; 
 import { CreateTokenMint } from "@/components/CreateTokenMint";
 import { LiquidityPool } from "@/components/LiquidityPool";
 
